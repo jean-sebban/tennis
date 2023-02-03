@@ -73,15 +73,13 @@ don <- don %>%
          loser_weight = weight_kg.y,
          winner_height = height_cm.x, 
          loser_height = height_cm.y) %>% 
-  select(match_id,numero_ordre,winner_player_id,winner_weight,winner_height,winner_age,loser_player_id,loser_weight,loser_height,loser_age)
-
-#Création d'un id
+  select(match_id,numero_ordre,match_stats_url_suffix,winner_player_id,winner_weight,winner_height,winner_age,loser_player_id,loser_weight,loser_height,loser_age)
 
 
 # Ajout d'un compteur de matchs par joueur par année
-toto1 <- unique(don$winner_player_id) %>% as.data.frame()
-toto2 <- unique(don$loser_player_id)%>% as.data.frame()
-toto <- toto1 %>% full_join(toto2,by=c("." = ".")) %>% rename("player_id" = ".") #%>% sample_n(100)
+winners <- unique(don$winner_player_id) %>% as.data.frame()
+losers <- unique(don$loser_player_id)%>% as.data.frame()
+toto <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".") #%>% sample_n(100)
 
 
 #Création d'un objet qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
@@ -97,7 +95,7 @@ for (i in toto$player_id){
     winner_player_id == i ~ as.character(nb_matches)),
     loser_nb_matches= case_when(
       loser_player_id == i ~ as.character(nb_matches))) %>% 
-    select(match_id,winner_nb_matches,loser_nb_matches) %>% 
+    select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% 
     mutate(winner_nb_matches = as.numeric(winner_nb_matches),
            loser_nb_matches = as.numeric(loser_nb_matches))
   # assign(i,a) 
@@ -112,12 +110,12 @@ for (i in toto$player_id){
 # colnames(a2) <- colnames(a)
 # 
 # a3 <- a2 %>%
-#   full_join(a1,by=c("match_id")) %>%
-#   group_by(match_id) %>%
+#   full_join(a1,by=c("match_stats_url_suffix")) %>%
+#   group_by(match_stats_url_suffix) %>%
 #   mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
 #          loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)
 #   )%>%
-#   select(match_id,winner_nb_matches,loser_nb_matches) %>% ungroup()
+#   select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
 # b[1] <- list(a3)
 # 
 # #Pour i=2
@@ -142,15 +140,15 @@ for (i in 1:(nrow(toto)-1)){
   a2 <- b[i+1] %>% as.data.frame()
   colnames(a1) <- colnames(a)
   colnames(a2) <- colnames(a)
-  a3 <- a2 %>% full_join(a1,by=c("match_id")) %>%
-    group_by(match_id) %>% 
+  a3 <- a2 %>% full_join(a1,by=c("match_stats_url_suffix")) %>%
+    group_by(match_stats_url_suffix) %>% 
     mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
            loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)) %>% 
-    select(match_id,winner_nb_matches,loser_nb_matches) %>% ungroup()
+    select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
   b[1] <- list(a3)
 }
 
 a <- b[1] %>% as.data.frame() %>% distinct()
-colnames(a) <- c("match_id", "winner_nb_matches", "loser_nb_matches")
+colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
 saveRDS(a,"nb_matches.RDS")
 
