@@ -21,14 +21,23 @@ tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data
 # match_scores_2017 <- read.csv2("data/match_scores_2017_unindexed_csv.csv",sep = ",")
 # classements_1973_2017 <- read.csv2("data/rankings_1973-2017_csv.csv",sep = ",")
 
+#2 - Nettoyage des fichiers match_stats et match_scores
 
+#2-1 Match_stats
 
 #Fusion des fichiers sur les matches de 1991 à 2017
-match_stats_1991_2017 <- match_stats_1991_2016 %>% bind_rows(match_stats_2017)
-match_scores_1991_2017 <- match_scores_1991_2016 %>% bind_rows(match_scores_2017)
-# rm(match_scores_2017,match_scores_1991_2016)
-# rm(match_stats_2017,match_stats_1991_2016)
+match_stats <- match_stats_1991_2016 %>% bind_rows(match_stats_2017)
 
+#on enlève les doublons de matches en utilisant l'url
+x <- unique(match_stats[duplicated(match_stats$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
+match_stats <- match_stats %>% filter(!(match_stats_url_suffix %in% x))
+
+#2-2 Match_scores
+
+match_scores <- match_scores_1991_2016 %>% bind_rows(match_scores_2017)
+x <- unique(match_scores[duplicated(match_scores$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
+match_scores <- match_scores %>% filter(!(match_stats_url_suffix %in% x))
+#il manque les url de tous les matches de l'us open 2017 dans le fichier des scores
 
 #2- Ajout d'une variable d'ordre des matches--------
 
