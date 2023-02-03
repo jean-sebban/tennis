@@ -80,8 +80,6 @@ don <- don %>%
 winners <- unique(don$winner_player_id) %>% as.data.frame()
 losers <- unique(don$loser_player_id)%>% as.data.frame()
 toto <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".") #%>% sample_n(100)
-
-
 #Création d'un objet qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
 b <- list()
 for (i in toto$player_id){
@@ -102,37 +100,6 @@ for (i in toto$player_id){
   b[i] <- list(a)
 
 }
-
-# #Pour i = 1
-# a1 <- b[1] %>% as.data.frame()
-# a2 <- b[1+1] %>% as.data.frame()
-# colnames(a1) <- colnames(a)
-# colnames(a2) <- colnames(a)
-# 
-# a3 <- a2 %>%
-#   full_join(a1,by=c("match_stats_url_suffix")) %>%
-#   group_by(match_stats_url_suffix) %>%
-#   mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
-#          loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)
-#   )%>%
-#   select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
-# b[1] <- list(a3)
-# 
-# #Pour i=2
-# a1 <- b[1] %>% as.data.frame()
-# a2 <- b[2+1] %>% as.data.frame()
-# colnames(a1) <- colnames(a)
-# colnames(a2) <- colnames(a)
-# 
-# a3 <- a2 %>%
-#   full_join(a1,by=c("match_id")) %>%
-#   group_by(match_id) %>%
-#   mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
-#          loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)
-#   )%>%
-#   select(match_id,winner_nb_matches,loser_nb_matches) %>% ungroup()
-# b[1] <- list(a3)
-
 #Fusion de tous les éléments de la liste (attention : pour 3500 éléments, cette boucle dure près de deux heures...)
 for (i in 1:(nrow(toto)-1)){
   print(i)
@@ -147,8 +114,16 @@ for (i in 1:(nrow(toto)-1)){
     select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
   b[1] <- list(a3)
 }
-
-a <- b[1] %>% as.data.frame() %>% distinct()
+a <- b[1] %>% as.data.frame() 
 colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
 saveRDS(a,"nb_matches.RDS")
+
+
+
+#Ajout du nombre de matches joués 
+a <- readRDS("nb_matches.rds")
+don <- don %>% left_join(a,by="match_stats_url_suffix")
+
+
+
 
