@@ -28,7 +28,7 @@ tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data
 #Fusion des fichiers sur les matches de 1991 à 2017
 match_stats <- match_stats_1991_2016 %>% bind_rows(match_stats_2017)
 
-#on enlève les doublons de matches en utilisant l'url
+#on enlève les doublons de matches en utilisant l'url comme identifiant
 x <- unique(match_stats[duplicated(match_stats$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
 match_stats <- match_stats %>% filter(!(match_stats_url_suffix %in% x))
 
@@ -37,35 +37,34 @@ match_stats <- match_stats %>% filter(!(match_stats_url_suffix %in% x))
 match_scores <- match_scores_1991_2016 %>% bind_rows(match_scores_2017)
 x <- unique(match_scores[duplicated(match_scores$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
 match_scores <- match_scores %>% filter(!(match_stats_url_suffix %in% x))
-#il manque les url de tous les matches de l'us open 2017 dans le fichier des scores
+#il manque les url des 127 matches de l'us open 2017 dans le fichier des scores...à compléter
 
 #2- Ajout d'une variable d'ordre des matches--------
-
-
-matchs_ordonnes <- match_stats_1991_2017 %>% 
+matchs_ordonnes <- match_stats %>% 
   mutate(annee = as.numeric(substr(match_id,1,4)),
          toto = substr(match_stats_url_suffix,21,26)) %>% 
   arrange(annee,tourney_order,desc(toto)) %>% 
-  cbind(1:nrow(match_stats_1991_2017)) %>% 
-  rename(numero_ordre = "1:nrow(match_stats_1991_2017)")
+  cbind(1:nrow(match_stats)) %>% 
+  rename(numero_ordre = "1:nrow(match_stats)")
   
 #Il n'y a pas toujours les données des matchs de qualification
 
 # 3 Filtre des matches pour lesquels on ne retrouve pas les scores--------
-matchs_ordonnes_filtres <- matchs_ordonnes %>% semi_join(match_scores_1991_2017,by="match_id")
-#Seulement 17 matches pour lesquels on a pas les scores
+matchs_ordonnes_filtres <- matchs_ordonnes %>% semi_join(match_scores,by="match_stats_url_suffix")
+#sans l'us open, on est sur une base de 95 610 matchs
 
 # 4 Constitution de la base de données don--------
 
-# 4 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)
+# 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
 
 don <- matchs_ordonnes_filtres %>% 
-  left_join(match_scores_1991_2017,by="match_id") %>% 
-  select(match_id,winner_player_id,loser_player_id,tourney_year_id,numero_ordre) %>% 
+  left_join(match_scores,by="match_stats_url_suffix") %>% 
+  select(match_stats_url_suffix,winner_player_id,loser_player_id,tourney_year_id,numero_ordre,match_stats_url_suffix,match_id.x) %>% 
+  rename(match_id = match_id.x) %>% 
   mutate(year = as.integer(substr(match_id,1,4)))
 
 #Age au moment du tournoi (en age révolu : En 2017, un joueur né en 1988 a 29 ans)
-joueurs <- joueurs %>% select(player_id,birth_year,weight_kg,height_cm)
+
 don <- don %>% 
   left_join(joueurs,by = c("winner_player_id"="player_id")) %>% 
   left_join(joueurs,by=c("loser_player_id" = "player_id")) %>% 
