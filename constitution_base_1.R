@@ -42,27 +42,21 @@ matchs_ordonnes <- match_stats_1991_2017 %>%
   
 #Il n'y a pas toujours les données des matchs de qualification
 
-# 3 Filtre des matches pour lesquels on ne retrouve pas les scores
+# 3 Filtre des matches pour lesquels on ne retrouve pas les scores--------
 matchs_ordonnes_filtres <- matchs_ordonnes %>% semi_join(match_scores_1991_2017,by="match_id")
 #Seulement 17 matches pour lesquels on a pas les scores
 
-# 5 Elaboration des stats sur les joueurs
+# 4 Constitution de la base de données don--------
 
-#paramètres
-# annees <- 2 #nombre d'années en compte
-# nb_matches <- 10 #nombre de matches précédents pris en compte dans le calcul
-
-#Création de variables concernant le joueur 1 (j1) et le joueur 2 (j2)
-
-joueurs <- joueurs %>% select(player_id,birth_year,weight_kg,height_cm)
+# 4 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)
 
 don <- matchs_ordonnes_filtres %>% 
   left_join(match_scores_1991_2017,by="match_id") %>% 
   select(match_id,winner_player_id,loser_player_id,tourney_year_id,numero_ordre) %>% 
   mutate(year = as.integer(substr(match_id,1,4)))
 
-#Age au moment du tournoi (en age révolu : En 2017, un joueur né en 1958 a 59 ans)
-
+#Age au moment du tournoi (en age révolu : En 2017, un joueur né en 1988 a 29 ans)
+joueurs <- joueurs %>% select(player_id,birth_year,weight_kg,height_cm)
 don <- don %>% 
   left_join(joueurs,by = c("winner_player_id"="player_id")) %>% 
   left_join(joueurs,by=c("loser_player_id" = "player_id")) %>% 
