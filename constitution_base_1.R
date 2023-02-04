@@ -124,5 +124,22 @@ a <- readRDS("nb_matches.rds")
 don <- don %>% left_join(a,by="match_stats_url_suffix")
 
 # 4-3 Ajout du classement du joueur au moment du match
+#Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
+toto <- classements_1973_2017 %>% filter(week_year > 1990) %>% group_by(player_id,week_year,week_month) %>% 
+  summarise(classement = round(mean(rank_number))) %>% ungroup()
+#ajout d'un identifiant
+toto <- toto %>% 
+  mutate(id_classement = paste(player_id,as.character(week_year),as.character(week_month),sep = "-")) %>%
+  select(id_classement,classement)
+
+toto2 <- don %>% 
+  left_join(match_scores[,c("tourney_year_id","match_stats_url_suffix")],by="match_stats_url_suffix") %>% 
+  left_join(tournois[,c("tourney_year_id","tourney_year","tourney_month")],by="tourney_year_id") %>% 
+  mutate(winner_id_classement = paste(winner_player_id,as.character(tourney_year),as.character(tourney_month),sep = "-"),
+         loser_id_classement = paste(loser_player_id,as.character(tourney_year),as.character(tourney_month),sep = "-"))
 
 
+toto3 <- toto2 %>% left_join(toto,by=c("winner_id_classement" = "id_classement")) %>% rename(winner_classement = classement)
+toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement)
+
+don <- toto4
