@@ -127,11 +127,12 @@ don <- don %>% left_join(a,by="match_stats_url_suffix")
 #Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
 toto <- classements_1973_2017 %>% filter(week_year > 1990) %>% group_by(player_id,week_year,week_month) %>% 
   summarise(classement = round(mean(rank_number))) %>% ungroup()
-#ajout d'un identifiant
+#ajout d'un identifiant dans la base du classement
 toto <- toto %>% 
   mutate(id_classement = paste(player_id,as.character(week_year),as.character(week_month),sep = "-")) %>%
   select(id_classement,classement)
 
+#ajout d'un identifiant dans la base des match pour les winners et les losers
 toto2 <- don %>% 
   left_join(match_scores[,c("tourney_year_id","match_stats_url_suffix")],by="match_stats_url_suffix") %>% 
   left_join(tournois[,c("tourney_year_id","tourney_year","tourney_month")],by="tourney_year_id") %>% 
@@ -143,3 +144,4 @@ toto3 <- toto2 %>% left_join(toto,by=c("winner_id_classement" = "id_classement")
 toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement)
 
 don <- toto4
+saveRDS(don,"don.rds")
