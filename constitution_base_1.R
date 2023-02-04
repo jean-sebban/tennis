@@ -11,6 +11,8 @@ match_scores_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-te
 joueurs <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/player_overviews_unindexed.csv",sep = ",")
 tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/tournaments_1877-2017_unindexed.csv",sep = ",")
 # classements_1973_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/rankings_1973-2017.csv",sep = ",") #Fichier lourd
+#le fichier classement fait près de 300 Mo
+
 
 #1-2 Si Les fichiers plats sont stockés sur le disque dur
 # match_stats_2017 <- read.csv2("data/match_stats_2017_unindexed_csv.csv",sep = ",")
@@ -62,9 +64,7 @@ don <- matchs_ordonnes_filtres %>%
   select(match_stats_url_suffix,winner_player_id,loser_player_id,tourney_year_id,numero_ordre,match_stats_url_suffix,match_id.x) %>% 
   rename(match_id = match_id.x) %>% 
   mutate(year = as.integer(substr(match_id,1,4)))
-
 #Age au moment du tournoi (en age révolu : En 2017, un joueur né en 1988 a 29 ans)
-
 don <- don %>% 
   left_join(joueurs,by = c("winner_player_id"="player_id")) %>% 
   left_join(joueurs,by=c("loser_player_id" = "player_id")) %>% 
@@ -75,6 +75,7 @@ don <- don %>%
          loser_height = height_cm.y) %>% 
   select(match_id,numero_ordre,match_stats_url_suffix,winner_player_id,winner_weight,winner_height,winner_age,loser_player_id,loser_weight,loser_height,loser_age)
 
+# 4-2 Ajout du nombre de matches joués précédemment-------------
 
 # # Ajout d'un compteur de matchs par joueur par année
 # winners <- unique(don$winner_player_id) %>% as.data.frame()
@@ -118,12 +119,10 @@ don <- don %>%
 # colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
 # saveRDS(a,"nb_matches.RDS")
 
-
-
 #Ajout du nombre de matches joués 
 a <- readRDS("nb_matches.rds")
 don <- don %>% left_join(a,by="match_stats_url_suffix")
 
-
+# 4-3 Ajout du classement du joueur au moment du match
 
 
