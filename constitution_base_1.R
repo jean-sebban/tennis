@@ -10,11 +10,11 @@ match_scores_1991_2016 <- read.csv2("https://datahub.io/sports-data/atp-world-to
 match_scores_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_scores_2017_unindexed.csv",sep = ",")
 joueurs <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/player_overviews_unindexed.csv",sep = ",")
 tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/tournaments_1877-2017_unindexed.csv",sep = ",")
-# classements_1973_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/rankings_1973-2017.csv",sep = ",") #Fichier lourd
+classements_1973_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/rankings_1973-2017.csv",sep = ",") #Fichier lourd
 #le fichier classement fait près de 300 Mo
 
 
-#1-2 Si Les fichiers plats sont stockés sur le disque dur
+#1-2 Si Les fichiers plats sont stockés sur le disque dur dans un dossier data
 # match_stats_2017 <- read.csv2("data/match_stats_2017_unindexed_csv.csv",sep = ",")
 # match_stats_1991_2016 <- read.csv2("data/match_stats_1991-2016_unindexed_csv.csv",sep = ",")
 # joueurs <- read.csv2("data/player_overviews_unindexed_csv.csv",sep = ",")
@@ -87,7 +87,6 @@ don <- don %>%
 #   print(i)
 #   a <- don %>% 
 #     filter(winner_player_id == i | loser_player_id == i)
-#   # a <-   mutate(nb_matches = 0:length(a))
 #   n <- nrow(a)
 #   a <- a %>% mutate(nb_matches = 0:(n-1))
 #   a <- a %>% mutate(winner_nb_matches = case_when(
@@ -97,7 +96,6 @@ don <- don %>%
 #     select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% 
 #     mutate(winner_nb_matches = as.numeric(winner_nb_matches),
 #            loser_nb_matches = as.numeric(loser_nb_matches))
-#   # assign(i,a) 
 #   b[i] <- list(a)
 # 
 # }
@@ -119,7 +117,7 @@ don <- don %>%
 # colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
 # saveRDS(a,"nb_matches.RDS")
 
-#Ajout du nombre de matches joués 
+#Ajout du nombre de matches joués
 a <- readRDS("nb_matches.rds")
 don <- don %>% left_join(a,by="match_stats_url_suffix")
 
@@ -145,3 +143,7 @@ toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement"))
 
 don <- toto4
 saveRDS(don,"don.rds")
+
+
+#4-4 Ajout des stats par joueur
+
