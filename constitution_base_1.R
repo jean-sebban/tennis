@@ -147,3 +147,21 @@ saveRDS(don,"don.rds")
 
 #4-4 Ajout des stats par joueur
 
+n <- 100
+# don2 <- don pas de tirage aléatoire
+don2 <- sample_n(don,size = n,replace = FALSE)
+winners <- unique(don2$winner_player_id) %>% as.data.frame()
+losers <- unique(don2$loser_player_id)%>% as.data.frame()
+winners_losers <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".")
+
+#Création d'un objet b qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
+b <- list()
+for (i in winners_losers$player_id){
+  print(i)
+  a <- don %>%
+    filter(winner_player_id == i | loser_player_id == i) %>% 
+    select(match_stats_url_suffix,winner_player_id,winner_nb_matches,loser_player_id,loser_nb_matches) %>% 
+    left_join(match_stats,by="match_stats_url_suffix")
+  b[i] <- list(a)
+}
+
