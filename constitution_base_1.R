@@ -4,24 +4,24 @@ library(stringr)
 #1 - Importation des fichiers-----
 
 #1-1 Directement avec les liens URL--------
-match_stats_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_stats_2017_unindexed.csv",sep = ",")
-match_stats_1991_2016 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_stats_1991-2016_unindexed.csv",sep = ",")
-match_scores_1991_2016 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_scores_1991-2016_unindexed.csv",sep = ",")
-match_scores_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_scores_2017_unindexed.csv",sep = ",")
-joueurs <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/player_overviews_unindexed.csv",sep = ",")
-tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/tournaments_1877-2017_unindexed.csv",sep = ",")
-classements_1973_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/rankings_1973-2017.csv",sep = ",") #Fichier lourd
-#le fichier classement fait près de 300 Mo
+# match_stats_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_stats_2017_unindexed.csv",sep = ",")
+# match_stats_1991_2016 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_stats_1991-2016_unindexed.csv",sep = ",")
+# match_scores_1991_2016 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_scores_1991-2016_unindexed.csv",sep = ",")
+# match_scores_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/match_scores_2017_unindexed.csv",sep = ",")
+# joueurs <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/player_overviews_unindexed.csv",sep = ",")
+# tournois <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/tournaments_1877-2017_unindexed.csv",sep = ",")
+# classements_1973_2017 <- read.csv2("https://datahub.io/sports-data/atp-world-tour-tennis-data/r/rankings_1973-2017.csv",sep = ",") #Fichier lourd
+# #le fichier classement fait près de 300 Mo
 
 
 #1-2 Si Les fichiers plats sont stockés sur le disque dur dans un dossier data
-# match_stats_2017 <- read.csv2("data/match_stats_2017_unindexed_csv.csv",sep = ",")
-# match_stats_1991_2016 <- read.csv2("data/match_stats_1991-2016_unindexed_csv.csv",sep = ",")
-# joueurs <- read.csv2("data/player_overviews_unindexed_csv.csv",sep = ",")
-# tournois <- read.csv2("data/tournaments_1877-2017_unindexed_csv.csv",sep = ",")
-# match_scores_1991_2016 <- read.csv2("data/match_scores_1991-2016_unindexed_csv.csv",sep = ",")
-# match_scores_2017 <- read.csv2("data/match_scores_2017_unindexed_csv.csv",sep = ",")
-# classements_1973_2017 <- read.csv2("data/rankings_1973-2017_csv.csv",sep = ",")
+match_stats_2017 <- read.csv2("data/match_stats_2017_unindexed_csv.csv",sep = ",")
+match_stats_1991_2016 <- read.csv2("data/match_stats_1991-2016_unindexed_csv.csv",sep = ",")
+joueurs <- read.csv2("data/player_overviews_unindexed_csv.csv",sep = ",")
+tournois <- read.csv2("data/tournaments_1877-2017_unindexed_csv.csv",sep = ",")
+match_scores_1991_2016 <- read.csv2("data/match_scores_1991-2016_unindexed_csv.csv",sep = ",")
+match_scores_2017 <- read.csv2("data/match_scores_2017_unindexed_csv.csv",sep = ",")
+classements_1973_2017 <- read.csv2("data/rankings_1973-2017_csv.csv",sep = ",")
 
 #2 - Nettoyage des fichiers match_stats et match_scores
 
@@ -144,24 +144,26 @@ toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement"))
 don <- toto4
 saveRDS(don,"don.rds")
 
+don <- readRDS("don.rds")
+
 
 #4-4 Ajout des stats par joueur
 
-n <- 100
-# don2 <- don pas de tirage aléatoire
-don2 <- sample_n(don,size = n,replace = FALSE)
-winners <- unique(don2$winner_player_id) %>% as.data.frame()
-losers <- unique(don2$loser_player_id)%>% as.data.frame()
-winners_losers <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".")
-
-#Création d'un objet b qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
-b <- list()
-for (i in winners_losers$player_id){
-  print(i)
-  a <- don %>%
-    filter(winner_player_id == i | loser_player_id == i) %>% 
-    select(match_stats_url_suffix,winner_player_id,winner_nb_matches,loser_player_id,loser_nb_matches) %>% 
-    left_join(match_stats,by="match_stats_url_suffix")
-  b[i] <- list(a)
-}
+# n <- 100
+# # don2 <- don pas de tirage aléatoire
+# don2 <- sample_n(don,size = n,replace = FALSE)
+# winners <- unique(don2$winner_player_id) %>% as.data.frame()
+# losers <- unique(don2$loser_player_id)%>% as.data.frame()
+# winners_losers <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".")
+# 
+# #Création d'un objet b qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
+# b <- list()
+# for (i in winners_losers$player_id){
+#   print(i)
+#   a <- don %>%
+#     filter(winner_player_id == i | loser_player_id == i) %>% 
+#     select(match_stats_url_suffix,winner_player_id,winner_nb_matches,loser_player_id,loser_nb_matches) %>% 
+#     left_join(match_stats,by="match_stats_url_suffix")
+#   b[i] <- list(a)
+# }
 
