@@ -124,6 +124,10 @@ don_with_stats <- don_with_stats %>%
 tmp <- don_with_stats %>%
   pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser"))
 
+saveRDS(tmp,"frederic.rds")
+
+# ...
+
 
 don2 <- don %>% left_join(match_stats,by="match_stats_url_suffix") %>% 
   select(contains(c("aces","player_id")),numero_ordre) %>% 
