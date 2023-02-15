@@ -75,6 +75,8 @@ don <- don %>%
          loser_height = height_cm.y) %>% 
   select(match_id,numero_ordre,match_stats_url_suffix,winner_player_id,winner_weight,winner_height,winner_age,loser_player_id,loser_weight,loser_height,loser_age)
 
+
+
 don_winner <- don %>%
   select(contains(match=c("match_stats_url_suffix", "numero_ordre", "winner"))) %>%
   rename_with(function(x){sub('winner_', '', x)}) %>%
@@ -123,6 +125,8 @@ don_with_stats <- don_with_stats %>%
 
 tmp <- don_with_stats %>%
   pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser"))
+
+tmp2 <- tmp %>% mutate(Y = 1) %>% select()
 
 saveRDS(tmp,"frederic.rds")
 
