@@ -75,12 +75,69 @@ don <- don %>%
          loser_height = height_cm.y) %>% 
   select(match_id,numero_ordre,match_stats_url_suffix,winner_player_id,winner_weight,winner_height,winner_age,loser_player_id,loser_weight,loser_height,loser_age)
 
+don_winner <- don %>%
+  select(contains(match=c("match_stats_url_suffix", "numero_ordre", "winner"))) %>%
+  rename_with(function(x){sub('winner_', '', x)}) %>%
+  mutate(winner_or_loser  = "winner")
+
+don_loser <- don %>%
+  select(contains(match=c("match_stats_url_suffix", "numero_ordre", "loser"))) %>%
+  rename_with(function(x){sub('loser_', '', x)}) %>%
+  mutate(winner_or_loser  = "loser")
+
+don_pivotted <- bind_rows(don_winner, don_loser)
+
+# ....
+
+winner_stats <- match_stats %>% 
+  select(contains(match=c("match_stats_url_suffix", "winner"))) %>%
+  rename_with(function(x){sub('winner_', '', x)}) %>%
+  mutate(winner_or_loser  = "winner")
+
+loser_stats <- match_stats %>% 
+  select(contains(match=c("match_stats_url_suffix", "loser"))) %>%
+  rename_with(function(x){sub('loser_', '', x)}) %>%
+  mutate(winner_or_loser  = "loser")
+
+match_player_stats <- bind_rows(winner_stats, loser_stats)
+
+don_with_stats <- don_pivotted %>%
+  left_join(match_player_stats, by=c('match_stats_url_suffix', 'winner_or_loser'))
+
+test <- function(x, N){
+  if(length(x)==1){
+    return(NA)
+  }
+  rowMeans(sapply(1:N, function(i) dplyr::lag(x, n=i)))
+}
+
+# TODO add stats
+don_with_stats <- don_with_stats %>% 
+  arrange(player_id, numero_ordre) %>%
+  group_by(player_id) %>%
+  mutate(nb_match_won = dplyr::lag(cumsum(winner_or_loser=="winner"))) %>%
+  mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>%
+  mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
+  ungroup()
+  # mutate(avg_nb_ace_last_N = test(x=aces, N=3)) %>%
+
+tmp <- don_with_stats %>%
+  pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser"))
+
+
+don2 <- don %>% left_join(match_stats,by="match_stats_url_suffix") %>% 
+  select(contains(c("aces","player_id")),numero_ordre) %>% 
+  pivot_longer(c("winner_player_id","loser_player_id")) 
+
+
+
+
 # 4-2 Ajout du nombre de matches joués précédemment-------------
 
 # # Ajout d'un compteur de matchs par joueur par année
-# winners <- unique(don$winner_player_id) %>% as.data.frame()
-# losers <- unique(don$loser_player_id)%>% as.data.frame()
-# toto <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".") #%>% sample_n(100)
+ winners <- unique(don$winner_player_id) %>% as.data.frame()
+ losers <- unique(don$loser_player_id)%>% as.data.frame()
+ toto <- winners %>% full_join(losers,by=c("." = ".")) %>% rename("player_id" = ".") #%>% sample_n(100)
 # #Création d'un objet b qui contient autant d'éléments que de joueurs différents dans l'ensemble des matchs
 # b <- list()
 # for (i in toto$player_id){
@@ -99,22 +156,47 @@ don <- don %>%
 #   b[i] <- list(a)
 # 
 # }
+
+# b <- list()
+b <- lapply (toto$player_id, function(i){
+  a <- don %>%
+    filter(winner_player_id == i | loser_player_id == i)
+  n <- nrow(a)
+  a <- a %>% mutate(nb_matches = 0:(n-1))
+  a <- a %>% mutate(winner_nb_matches = case_when(
+    winner_player_id == i ~ as.character(nb_matches)),
+    loser_nb_matches= case_when(
+      loser_player_id == i ~ as.character(nb_matches))) %>%
+    select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>%
+    mutate(winner_nb_matches = as.numeric(winner_nb_matches),
+           loser_nb_matches = as.numeric(loser_nb_matches))
+   list(a)
+
+})
+
+
 # #Fusion de tous les éléments de la liste (attention : pour 3500 éléments, cette boucle dure près de deux heures...)
-# for (i in 1:(nrow(toto)-1)){
-#   print(i)
-#   a1 <- b[1] %>% as.data.frame()
-#   a2 <- b[i+1] %>% as.data.frame()
-#   colnames(a1) <- colnames(a)
-#   colnames(a2) <- colnames(a)
-#   a3 <- a2 %>% full_join(a1,by=c("match_stats_url_suffix")) %>%
-#     group_by(match_stats_url_suffix) %>% 
-#     mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
-#            loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)) %>% 
-#     select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
-#   b[1] <- list(a3)
-# }
-# a <- b[1] %>% as.data.frame() 
-# colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
+
+
+
+
+for (i in 1:(nrow(toto)-1)){
+  print(i)
+  a1 <- b[1] %>% as.data.frame()
+  a2 <- b[i+1] %>% as.data.frame()
+  colnames(a1) <- colnames(a)
+  colnames(a2) <- colnames(a)
+  a3 <- a2 %>% full_join(a1,by=c("match_stats_url_suffix")) %>%
+    group_by(match_stats_url_suffix) %>%
+    mutate(winner_nb_matches = sum(winner_nb_matches.x,winner_nb_matches.y,na.rm = TRUE),
+           loser_nb_matches = sum(loser_nb_matches.x,loser_nb_matches.y,na.rm = TRUE)) %>%
+    select(match_stats_url_suffix,winner_nb_matches,loser_nb_matches) %>% ungroup()
+  b[1] <- list(a3)
+}
+a <- b[1] %>% as.data.frame()
+colnames(a) <- c("match_stats_url_suffix", "winner_nb_matches", "loser_nb_matches")
+
+
 # saveRDS(a,"nb_matches.RDS")
 
 #Ajout du nombre de matches joués
