@@ -70,6 +70,8 @@ match_stats <- match_stats %>%
 # 3 Filtre des matches pour lesquels on ne retrouve pas les scores--------
 match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix")
 #sans l'us open, on est sur une base de 95 610 matchs
+
+rm(x)
 ```
 
 
@@ -101,6 +103,10 @@ don <- don %>%
 
 ## 2 - 3 ajout d'information à partir de la base du classement
 
+- ajout du classement du gagnant et du perdant au moment du match
+
+A partir de la base des classements, on affecte un classement moyen à chaque joueur pour chaque mois de l'année. 
+
 ```{r}
 #Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
 toto <- classements_1973_2017 %>% filter(week_year > 1990) %>% group_by(player_id,week_year,week_month) %>% 
@@ -119,7 +125,7 @@ toto2 <- don %>%
 
 
 toto3 <- toto2 %>% left_join(toto,by=c("winner_id_classement" = "id_classement")) %>% rename(winner_classement = classement)
-toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement)
+toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement) %>% select(-contains("id_classement"))
 
 don <- toto4
 rm(toto,toto2,toto3,toto4)
@@ -178,13 +184,63 @@ don_with_stats <- don_with_stats %>%
   group_by(player_id) %>%
   mutate(nb_match_won = dplyr::lag(cumsum(winner_or_loser=="winner"))) %>%
   mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>%
-  mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
+  mutate(avg_nb_ace_last_3 = test(x=aces, N=3)) %>%
+  # mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
   ungroup()
-  # mutate(avg_nb_ace_last_N = test(x=aces, N=3)) %>%
+  
 
-tmp <- don_with_stats %>%
-  pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser"))
+don <- don_with_stats %>%
+  pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser")) %>% 
+  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_nb_ace")))
+
+rm(don_loser,don_pivotted,don_winner,don_with_stats,loser_stats,match_player_stats,winner_stats)
 
 ```
+
+## 2-5 Récupération d'informations sur le tournoi
+
+- Informations sur la surface du terrain (4 possibilités : herbe, terre battue, dur et moquette)
+
+```{r}
+tmp <- don %>% 
+  left_join(match_scores[,c("match_stats_url_suffix","tourney_url_suffix")],by="match_stats_url_suffix") %>% 
+  left_join(tournois[,c("tourney_url_suffix","tourney_surface")],by="tourney_url_suffix") %>% 
+  select(-contains("tourney_url"))
+
+don <- tmp
+
+```
+
+## 2-6 Mise en forme finale de la base
+
+1 - Il faut doubler la base
+2 - Rajouter une colonne Y dans chacune des base (1 et 0)
+3 - Concaténer les bases
+
+```{r}
+don_winner <- don %>% mutate(target = "1") %>% 
+  rename_with(function(x){sub('_winner', '_j1', x)}) %>% 
+  rename_with(function(x){sub('_loser', '_j2', x)})
+
+don_loser_part1 <-  don %>% 
+  select(contains("_winner")) %>% 
+  rename_with(function(x){sub('_winner', '_loser', x)})
+
+don_loser_part2 <- don %>% 
+  select(contains("_loser")) %>% 
+  rename_with(function(x){sub('_loser', '_winner', x)})
+
+don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c("numero_ordre","tourney_surface","match_stats_url_suffix")]) %>% 
+  mutate(target = "0") %>% 
+  rename_with(function(x){sub('_winner', '_j1', x)}) %>% 
+  rename_with(function(x){sub('_loser', '_j2', x)})
+
+don <- don_winner %>% bind_rows(don_loser)
+  
+# rename_with(function(x){sub('_winner', 'j1', x)}) %>% 
+  
+```
+
+
 
 
