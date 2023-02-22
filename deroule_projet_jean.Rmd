@@ -204,7 +204,7 @@ don_with_stats <- don_pivotted %>%
 # X c'est la variable à tester, 
 # N c'est le nombre de matches précédents sur laquelle on calcule la stat
 
-#Nombre d'aces moyens sur les N derniers matches
+#Calcul de la moyenne de x sur les N derniers matches
 moy_stat_last_matchs <- function(x, N){
   if(length(x)==1){
     return(NA)
@@ -212,7 +212,7 @@ moy_stat_last_matchs <- function(x, N){
   rowMeans(sapply(1:N, function(i) dplyr::lag(x, n=i)))
 }
 
-
+#calcul du nombre de matches gagnés sur les N derniers matches
 nb_last_matchs <- function(x, N){
   a <- if_else(x == "winner",1,0)
   if(length(a)==1){
@@ -222,12 +222,15 @@ nb_last_matchs <- function(x, N){
 }
 
 # TODO add stats
+
 don_with_stats2 <- don_with_stats %>% 
   arrange(player_id, numero_ordre) %>%
   group_by(player_id) %>%
   # mutate(nb_match_won = dplyr::lag(cumsum(winner_or_loser=="winner"))) %>%
   mutate(nb_match_won_last_5 = nb_last_matchs(winner_or_loser,5)) %>%
   # mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>% 
+  mutate(avg_pct_first_serves_in_5 = moy_stat_last_matchs(x=pct_first_serves_in, N=5)) %>%
+  mutate(avg_pct_first_serves_points_won_5 = moy_stat_last_matchs(x=pct_first_serves_points_won, N=5)) %>%
   mutate(avg_pct_ace_last_5 = moy_stat_last_matchs(x=pct_aces, N=5)) %>%
   mutate(avg_pct_double_faults_last_5 = moy_stat_last_matchs(x=pct_double_faults, N=5)) %>%
   # mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
@@ -236,7 +239,7 @@ don_with_stats2 <- don_with_stats %>%
 
 don <- don_with_stats2 %>%
   pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser")) %>% 
-  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults")))
+  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","pct_first_serves")))
 
 rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,match_player_stats,winner_stats)
 
@@ -275,7 +278,7 @@ don_loser_part2 <- don %>%
   select(contains("_loser")) %>% 
   rename_with(function(x){sub('_loser', '_winner', x)})
 
-don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c("numero_ordre","tourney_surface","match_stats_url_suffix")]) %>% 
+don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c("numero_ordre","tourney_surface","tourney_conditions","match_stats_url_suffix")]) %>% 
   mutate(target = "0") %>% 
   rename_with(function(x){sub('_winner', '_j1', x)}) %>% 
   rename_with(function(x){sub('_loser', '_j2', x)})
