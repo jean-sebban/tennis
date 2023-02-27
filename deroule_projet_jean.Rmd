@@ -3,6 +3,11 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+```{r}
+library(tidyverse)
+```
+
+
 ## 1 - Importation des fichiers
 
 ```{r}
@@ -38,6 +43,7 @@ classements_1973_2017 <- read.csv2("data/rankings_1973-2017_csv.csv",sep = ",")
 
 #Fusion des fichiers sur les matches de 1991 à 2017
 match_stats <- match_stats_1991_2016 %>% bind_rows(match_stats_2017)
+rm(match_stats_1991_2016,match_stats_2017)
 
 #on enlève les doublons de matches en utilisant l'url comme identifiant
 x <- unique(match_stats[duplicated(match_stats$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
@@ -46,24 +52,59 @@ match_stats <- match_stats %>% filter(!(match_stats_url_suffix %in% x))
 #2-2 Match_scores
 
 match_scores <- match_scores_1991_2016 %>% bind_rows(match_scores_2017)
+rm(match_scores_1991_2016,match_scores_2017)
 x <- unique(match_scores[duplicated(match_scores$match_stats_url_suffix),"match_stats_url_suffix"]) #liste des doublons d'url
 match_scores <- match_scores %>% filter(!(match_stats_url_suffix %in% x))
 #il manque les url des 127 matches de l'us open 2017 dans le fichier des scores...à compléter
 
 #2- Ajout d'une variable d'ordre des matches--------
-matchs_stats <- match_stats %>% 
+match_stats <- match_stats %>% 
   mutate(annee = as.numeric(substr(match_id,1,4)),
          toto = substr(match_stats_url_suffix,21,26)) %>% 
   arrange(annee,tourney_order,desc(toto)) %>% 
   cbind(1:nrow(match_stats)) %>% 
   rename(numero_ordre = "1:nrow(match_stats)")
   
-#Il n'y a pas toujours les données des matchs de qualification
+#Remarque : Il n'y a pas toujours les données des matchs de qualification
 
 # 3 Filtre des matches pour lesquels on ne retrouve pas les scores--------
-matchs_stats <- matchs_stats %>% semi_join(match_scores,by="match_stats_url_suffix")
+match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix")
 #sans l'us open, on est sur une base de 95 610 matchs
+
+rm(x)
 ```
+
+Ajout de variables dans la base match_stats
+- pourcentage de premier service
+- pourcentage de points gagnés au premier service
+- pourcentage de points gagnés au deuxième service
+- pourcentage de doubles fautes (sur le nombre de services)
+- poucentage d'aces
+- pourcentage de balles de breaks sur les points retournés
+- pourcentage de balles de breaks sur les points servis
+
+```{r}
+
+#Ajout de stats : 
+match_stats <- match_stats %>% 
+  mutate(winner_pct_first_serves_in = winner_first_serves_in/winner_first_serves_total*100,
+         winner_pct_first_serves_points_won = winner_first_serve_points_won/winner_first_serves_total*100,
+         winner_pct_second_serves_points_won = winner_second_serve_points_won/winner_second_serve_points_total*100,
+         winner_pct_aces = winner_aces/winner_service_points_total*100,
+         winner_pct_double_faults = winner_double_faults/winner_service_points_total*100,
+         winner_pct_break_points_serve_total = winner_break_points_serve_total/winner_service_points_total*100,
+         winner_pct_break_points_return_total = winner_break_points_return_total/winner_return_points_total*100,
+         loser_pct_first_serves_in = loser_first_serves_in/loser_first_serves_total*100,
+         loser_pct_first_serves_points_won = loser_first_serve_points_won/loser_first_serves_total*100,
+         loser_pct_second_serves_points_won = loser_second_serve_points_won/loser_second_serve_points_total*100,
+         loser_pct_aces = loser_aces/loser_service_points_total*100,
+         loser_pct_double_faults = loser_double_faults/loser_service_points_total*100,
+         loser_pct_break_points_serve_total = loser_break_points_serve_total/loser_service_points_total*100,
+         loser_pct_break_points_return_total = loser_break_points_return_total/loser_return_points_total*100)
+
+
+```
+
 
 
 ## 2 -2 ajout d'information à partir de la base des joueurs
@@ -72,11 +113,12 @@ matchs_stats <- matchs_stats %>% semi_join(match_scores,by="match_stats_url_suff
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
 
-don <- matchs_stats %>% 
+don <- match_stats %>% 
   left_join(match_scores,by="match_stats_url_suffix") %>% 
   select(match_stats_url_suffix,winner_player_id,loser_player_id,tourney_year_id,numero_ordre,match_stats_url_suffix,match_id.x) %>% 
   rename(match_id = match_id.x) %>% 
   mutate(year = as.integer(substr(match_id,1,4)))
+
 #Age au moment du tournoi (en age révolu : En 2017, un joueur né en 1988 a 29 ans)
 don <- don %>% 
   left_join(joueurs,by = c("winner_player_id"="player_id")) %>% 
@@ -92,6 +134,10 @@ don <- don %>%
 
 
 ## 2 - 3 ajout d'information à partir de la base du classement
+
+- ajout du classement du gagnant et du perdant au moment du match
+
+A partir de la base des classements, on affecte un classement moyen à chaque joueur pour chaque mois de l'année. 
 
 ```{r}
 #Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
@@ -111,9 +157,10 @@ toto2 <- don %>%
 
 
 toto3 <- toto2 %>% left_join(toto,by=c("winner_id_classement" = "id_classement")) %>% rename(winner_classement = classement)
-toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement)
+toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement")) %>% rename(loser_classement = classement) %>% select(-contains("id_classement"))
 
 don <- toto4
+rm(toto,toto2,toto3,toto4)
 ```
 2- 4 ajout d'informations à partir des stats matches
 
@@ -153,26 +200,100 @@ match_player_stats <- bind_rows(winner_stats, loser_stats)
 don_with_stats <- don_pivotted %>%
   left_join(match_player_stats, by=c('match_stats_url_suffix', 'winner_or_loser'))
 
-test <- function(x, N){
+#fonction qui calcule une moyenne sur une variable X à partir de N matches précédents : 
+# X c'est la variable à tester, 
+# N c'est le nombre de matches précédents sur laquelle on calcule la stat
+
+#Calcul de la moyenne de x sur les N derniers matches
+moy_stat_last_matchs <- function(x, N){
   if(length(x)==1){
     return(NA)
   }
   rowMeans(sapply(1:N, function(i) dplyr::lag(x, n=i)))
 }
 
+#calcul du nombre de matches gagnés sur les N derniers matches
+nb_last_matchs <- function(x, N){
+  a <- if_else(x == "winner",1,0)
+  if(length(a)==1){
+    return(NA)
+  }
+  rowSums(sapply(1:N, function(i) dplyr::lag(a, n=i)))
+}
+
 # TODO add stats
-don_with_stats <- don_with_stats %>% 
+
+don_with_stats2 <- don_with_stats %>% 
   arrange(player_id, numero_ordre) %>%
   group_by(player_id) %>%
-  mutate(nb_match_won = dplyr::lag(cumsum(winner_or_loser=="winner"))) %>%
-  mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>%
-  mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
+  # mutate(nb_match_won = dplyr::lag(cumsum(winner_or_loser=="winner"))) %>%
+  mutate(nb_match_won_last_5 = nb_last_matchs(winner_or_loser,5)) %>%
+  # mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>% 
+  mutate(avg_pct_first_serves_in_5 = moy_stat_last_matchs(x=pct_first_serves_in, N=5)) %>%
+  mutate(avg_pct_first_serves_points_won_5 = moy_stat_last_matchs(x=pct_first_serves_points_won, N=5)) %>%
+  mutate(avg_pct_ace_last_5 = moy_stat_last_matchs(x=pct_aces, N=5)) %>%
+  mutate(avg_pct_double_faults_last_5 = moy_stat_last_matchs(x=pct_double_faults, N=5)) %>%
+  # mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
   ungroup()
-  # mutate(avg_nb_ace_last_N = test(x=aces, N=3)) %>%
+  
 
-tmp <- don_with_stats %>%
-  pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser"))
+don <- don_with_stats2 %>%
+  pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser")) %>% 
+  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","pct_first_serves")))
+
+rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,match_player_stats,winner_stats)
 
 ```
+
+## 2-5 Récupération d'informations sur le tournoi
+
+- Informations sur la surface du terrain (4 possibilités : herbe, terre battue, dur et moquette)
+
+```{r}
+tmp <- don %>% 
+  left_join(match_scores[,c("match_stats_url_suffix","tourney_url_suffix")],by="match_stats_url_suffix") %>% 
+  left_join(tournois[,c("tourney_url_suffix","tourney_surface","tourney_conditions")],by="tourney_url_suffix") %>% 
+  select(-contains("tourney_url"))
+
+don <- tmp
+
+```
+
+## 2-6 Mise en forme finale de la base
+
+1 - Il faut doubler la base
+2 - Rajouter une colonne Y dans chacune des base (1 et 0)
+3 - Concaténer les bases
+
+```{r}
+don_winner <- don %>% mutate(target = "1") %>% 
+  rename_with(function(x){sub('_winner', '_j1', x)}) %>% 
+  rename_with(function(x){sub('_loser', '_j2', x)})
+
+don_loser_part1 <-  don %>% 
+  select(contains("_winner")) %>% 
+  rename_with(function(x){sub('_winner', '_loser', x)})
+
+don_loser_part2 <- don %>% 
+  select(contains("_loser")) %>% 
+  rename_with(function(x){sub('_loser', '_winner', x)})
+
+don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c("numero_ordre","tourney_surface","tourney_conditions","match_stats_url_suffix")]) %>% 
+  mutate(target = "0") %>% 
+  rename_with(function(x){sub('_winner', '_j1', x)}) %>% 
+  rename_with(function(x){sub('_loser', '_j2', x)})
+
+don <- don_winner %>% bind_rows(don_loser)
+  
+# rename_with(function(x){sub('_winner', 'j1', x)}) %>% 
+  
+```
+
+Maintenant on ne garde que les variables qui vont servir dans la modélisation
+
+```{r}
+don2 <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
+```
+
 
 
