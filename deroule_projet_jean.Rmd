@@ -375,11 +375,11 @@ Les algorithmes suivants sont testés (11 algorithmes en tout)
 
 5.  une forêt aléatoire avec les paramètres par défaut de randomForest
 
-6.  Une regression ridge, avec deux lambda différents
+6.  Une regression ridge, avec deux lambda différents (deux algos)
 
-7.  Une regression lasso avec deux lambda différents
+7.  Une regression lasso avec deux lambda différents (deux algos)
 
-8.  Une regression elastic net avec deux lambda différents
+8.  Une regression elastic net avec deux lambda différents (deux algos)
 
 Attention : le programme ci-dessous met plus de deux heures pour générer
 le fichier de résultat.
