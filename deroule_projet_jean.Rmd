@@ -381,6 +381,9 @@ Les algorithmes suivants sont testés (11 algorithmes en tout)
 
 8.  Une regression elastic net avec deux lambda différents
 
+Attention : le programme ci-dessous met plus de deux heures pour générer
+le fichier de résultat.
+
 ```{r}
 for(ii in 1:nb){
   print(ii)
