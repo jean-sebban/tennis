@@ -327,8 +327,11 @@ saveRDS(don,"don.rds")
 
 # II - Comparaison des classifications
 
-```{r}
+```{r,warning=FALSE}
 #packages utilisés pour faire de la prévision
+library(rpart)
+library(randomForest)
+library(glmnet)
 
 ```
 
@@ -337,6 +340,9 @@ saveRDS(don,"don.rds")
 ```{r}
 don <- readRDS("don.rds")
 dim(don)
+#version du fichier don pour les tests
+# don <- don[sample(1:nrow(don),size = 1000),]
+
 #Construction d'une version matrice pour glmnet
 XX <- model.matrix(target~.,data=don)   #version matrice
 YY <- don$target
@@ -354,15 +360,26 @@ RES <- data.frame(Y=don$target)
 Test avec une validation croisée à 10 blocs. Les résulats des différents
 algorithmes seront stockés dans le dataframe RES.
 
-Les algorithmes suivants sont testés :
+Les algorithmes suivants sont testés (11 algorithmes en tout)
 
-1.   La regression logistique avec toutes les variables (algo1)
+1.  La regression logistique avec toutes les variables (algo1)
 
-2.   La regression logistique en sélectionnant les variables selon le
+2.  La regression logistique en sélectionnant les variables selon le
     critère AIC (algo2)
 
-3.   La regression logistique en sélectionnant les variables selon BIC
+3.  La regression logistique en sélectionnant les variables selon BIC
     (algo3)
+
+4.  Un arbre de regression avec les paramètres par défaut de la fonction
+    rpart
+
+5.  une forêt aléatoire avec les paramètres par défaut de randomForest
+
+6.  Une regression ridge, avec deux lambda différents
+
+7.  Une regression lasso avec deux lambda différents
+
+8.  Une regression elastic net avec deux lambda différents
 
 ```{r}
 for(ii in 1:nb){
@@ -382,28 +399,28 @@ for(ii in 1:nb){
   algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
   RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
   ########################
-  # algo4 <- rpart(Y~.,data=donA)
-  # RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
+  algo4 <- rpart(target~.,data=donA)
+  RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
   # ########################
-  # algo5 <- randomForest(Y~.,data=donA)
-  # RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
+  algo5 <- randomForest(target~.,data=donA)
+  RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
   # ########################
-  # algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
-  # RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
-  # RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+  algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+  RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
   # ########################
-  # algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
-  # RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
-  # RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+  RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
   # ########################
-  # algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
-  # RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
-  # RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response") 
+  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+  RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
 }
-saveRDS(RES,"RES.RDS")
+# saveRDS(RES,"RES.RDS")
 ```
 
-# III - Analyse des résultats
+# III - Mesure de la performance
 
 ```{r,warning=FALSE}
 library(pROC)
@@ -429,9 +446,33 @@ for(ii in 2:ncol(RES2)){
 }
 ```
 
-## 2 - Calcul de la précision
+## 2 - Mesure de la précision
+
+Il s'agit de calculer ici le taux de mal classés (en anglais : accuracy)
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
 sort(apply(RES2,2,precis,Y=RES2$Y))
+```
+
+## 3 - Autres mesures
+
+```{r}
+plot(roc(Y~log,data=RES))
+auctoutlemonde <- roc(Y~.,data=RES)
+plot(auctoutlemonde$log)
+for(jj in 2:length(auctoutlemonde)){
+  plot(auctoutlemonde[[jj]],add=TRUE,col=jj)
+}
+
+
+res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("threshold","sensitivity","accuracy",
+                                                "specificity","recall"))
+rownames(res) <- names(RES)[-1]
+
+res$med=res$specificity+res$sensitivity
+
+arrange(res,-med)
+arrange(res,-accuracy)
+arrange(res,-specificity)
 ```
