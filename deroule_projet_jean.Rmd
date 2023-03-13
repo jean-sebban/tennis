@@ -1,12 +1,14 @@
 ---
 title: "R Notebook"
-output: html_notebook
-editor_options: 
-  markdown: 
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  markdown:
     wrap: 72
 ---
 
-```{r}
+```{r,warning=FALSE}
 library(tidyverse)
 ```
 
@@ -324,3 +326,112 @@ saveRDS(don,"don.rds")
 ```
 
 # II - Comparaison des classifications
+
+```{r}
+#packages utilisés pour faire de la prévision
+
+```
+
+## 1 - Préparation du fichier
+
+```{r}
+don <- readRDS("don.rds")
+dim(don)
+#Construction d'une version matrice pour glmnet
+XX <- model.matrix(target~.,data=don)   #version matrice
+YY <- don$target
+```
+
+## 2 - Validation croisée
+
+```{r}
+nb <- 10
+set.seed(1234)
+blocs <- sample(rep(1:10,length = nrow(don)))
+RES <- data.frame(Y=don$target)
+```
+
+Test avec une validation croisée à 10 blocs. Les résulats des différents
+algorithmes seront stockés dans le dataframe RES.
+
+Les algorithmes suivants sont testés :
+
+1.   La regression logistique avec toutes les variables (algo1)
+
+2.   La regression logistique en sélectionnant les variables selon le
+    critère AIC (algo2)
+
+3.   La regression logistique en sélectionnant les variables selon BIC
+    (algo3)
+
+```{r}
+for(ii in 1:nb){
+  print(ii)
+  donA <- don[blocs!=ii,]
+  donT <- don[blocs==ii,]
+  XXA <- XX[blocs!=ii,]
+  XXT <- XX[blocs==ii,]
+  YYA <- YY[blocs!=ii]
+  ########################
+  algo1 <- glm(target~.,data=donA,family="binomial")
+  RES[blocs==ii,"log"] <- predict(algo1,donT,type="response")
+  ########################
+  algo2 <- step(algo1,trace=0)
+  RES[blocs==ii,"AIC"] <- predict(algo2,donT,type="response")
+  ########################
+  algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
+  RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
+  ########################
+  # algo4 <- rpart(Y~.,data=donA)
+  # RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
+  # ########################
+  # algo5 <- randomForest(Y~.,data=donA)
+  # RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
+  # ########################
+  # algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+  # RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+  # RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  # algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+  # RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+  # RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  # algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+  # RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+  # RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response") 
+}
+saveRDS(RES,"RES.RDS")
+```
+
+# III - Analyse des résultats
+
+```{r,warning=FALSE}
+library(pROC)
+library(purrr)
+
+
+```
+
+## 1 - Test des différents seuils
+
+```{r}
+########Comparaison des algorithmes de classification-------------
+RES <- readRDS("RES.RDS")
+# RES <- readRDS("data/classif/RESI.RDS")
+# RES <- readRDS("data/classif/RESP.RDS")
+RES2 <- RES
+
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+```
+
+## 2 - Calcul de la précision
+
+```{r}
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
+```
