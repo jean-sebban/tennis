@@ -1,34 +1,85 @@
 ---
-title: "test_tidymodel_jean"
+title: "Prévision résulats"
 format: html
+toc-title: "sommaire"
 editor: visual
 ---
 
 ```{r}
+#| warning: false
+#| 
 library(tidymodels)
 library(tidyverse)
 ```
 
-## Data import
+## Import et préparation
+
+Le fichier avec les variables explicatives a été constitué précedemment. Le preprocessing a déjà été fait.
 
 ```{r}
-don <- readRDS("don.rds")
+don <- readRDS("data/don_avecNA.rds") %>% arrange(match_stats_url_suffix) %>% select(-match_stats_url_suffix)
+glimpse(don)
 ```
 
+## Exploration des données
 
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+-   Exploration des données manquantes
 
 ```{r}
-1 + 1
+colSums(is.na(don))
+dim(don)
 ```
 
-You can add options to executable code like this
+## 1 - Resample library : training set, validation set test
+
+On utilisera les matches les plus récents pour tester le modèle à la fin.
 
 ```{r}
-#| echo: false
-2 * 2
+set.seed(42)
+
+#Les matches les plus récents vont servir à tester le modèle à la fin (10%)
+dataset_split <- initial_time_split(don, 
+                               prop = 0.9, 
+                               strata = target) #target c'est le Y
+dataset_split
+
+training <- training(dataset_split) #constitution du training
+testing <- testing(dataset_split) #constitution du data de test
+
+
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## 2. recipes library : création d'une collection de recipes
+
+### 2.1 Basic recipe (formule basique)
+
+1.  On impute les valeurs manquantes avec les moyennes des stats
+
+2.  On centre-réduit toutes les quantitatives
+
+```{r}
+basic_rec <- recipe(data = training, target~.) %>% 
+  step_impute_mode(all_nominal_predictors()) %>%
+  step_impute_mean(all_numeric_predictors()) 
+  # step_normalize(all_numeric_predictors())  
+  # step_other(ghm2, threshold = 0.02) %>% 
+  # step_other(dp, threshold = 0.05) %>% 
+  # step_dummy(all_nominal_predictors()) %>% 
+  # step_zv(all_predictors())
+
+a <- juice(prep(basic_rec))
+```
+
+### 2.2 Recette d'interaction
+
+```{r}
+rec_interaction <-
+  basic_rec %>%
+  step_interact(~classement_j1 : classement_j2 )
+  # step_interact(~ends_with("j1") : ends_with("j2") ) #interaction entre age et tous les dp
+
+a <- juice(prep(rec_interaction))
+
+```
+
+### 2.3 recetttes de splines

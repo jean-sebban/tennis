@@ -314,7 +314,7 @@ don <- don_winner %>% bind_rows(don_loser)
 
 ```{r}
 #1
-don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
+don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
 
 #2
 don_avecNA <- don %>% mutate(target = as.factor(target))
