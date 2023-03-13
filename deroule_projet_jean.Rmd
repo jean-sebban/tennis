@@ -1,12 +1,16 @@
 ---
 title: "R Notebook"
 output: html_notebook
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r}
 library(tidyverse)
 ```
 
+# I - Avant la modélisation
 
 ## 1 - Importation des fichiers
 
@@ -74,14 +78,21 @@ match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix
 rm(x)
 ```
 
-Ajout de variables dans la base match_stats
-- pourcentage de premier service
-- pourcentage de points gagnés au premier service
-- pourcentage de points gagnés au deuxième service
-- pourcentage de doubles fautes (sur le nombre de services)
-- poucentage d'aces
-- pourcentage de balles de breaks sur les points retournés
-- pourcentage de balles de breaks sur les points servis
+Ajout de variables dans la base match_stats :
+
+-   pourcentage de premier service
+
+-   pourcentage de points gagnés au premier service
+
+-   pourcentage de points gagnés au deuxième service
+
+-   pourcentage de doubles fautes (sur le nombre de services)
+
+-   poucentage d'aces
+
+-   pourcentage de balles de breaks sur les points retournés
+
+-   pourcentage de balles de breaks sur les points servis
 
 ```{r}
 
@@ -105,10 +116,7 @@ match_stats <- match_stats %>%
 
 ```
 
-
-
 ## 2 -2 ajout d'information à partir de la base des joueurs
-
 
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
@@ -132,12 +140,12 @@ don <- don %>%
 
 ```
 
-
 ## 2 - 3 ajout d'information à partir de la base du classement
 
-- ajout du classement du gagnant et du perdant au moment du match
+-   ajout du classement du gagnant et du perdant au moment du match
 
-A partir de la base des classements, on affecte un classement moyen à chaque joueur pour chaque mois de l'année. 
+A partir de la base des classements, on affecte un classement moyen à
+chaque joueur pour chaque mois de l'année.
 
 ```{r}
 #Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
@@ -162,13 +170,16 @@ toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement"))
 don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
-2- 4 ajout d'informations à partir des stats matches
 
-* 1 - pourcentage de matches gagnés sur les x matches précédents
-* 2 - pourcentage de fautes directes/ensemble des points perdus sur les x matches précédents
-* 3 - pourcentage de coups gagnants/pointsgagnés sur les x matches précédents
-* 4 - pourcentage de points gagnés au premier service
-* 5 - pourcentage de points gagnés au deuxième service
+## 2- 4 ajout d'informations à partir des stats matches
+
+-   1 - pourcentage de matches gagnés sur les x matches précédents
+-   2 - pourcentage de fautes directes/ensemble des points perdus sur
+    les x matches précédents
+-   3 - pourcentage de coups gagnants/pointsgagnés sur les x matches
+    précédents
+-   4 - pourcentage de points gagnés au premier service
+-   5 - pourcentage de points gagnés au deuxième service
 
 ```{r}
 don_winner <- don %>%
@@ -231,6 +242,8 @@ don_with_stats2 <- don_with_stats %>%
   # mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>% 
   mutate(avg_pct_first_serves_in_5 = moy_stat_last_matchs(x=pct_first_serves_in, N=5)) %>%
   mutate(avg_pct_first_serves_points_won_5 = moy_stat_last_matchs(x=pct_first_serves_points_won, N=5)) %>%
+  # mutate(avg_pct_second_serves_in_5 = moy_stat_last_matchs(x=pct_second_serves_in, N=5)) %>%
+  mutate(avg_pct_second_serves_points_won_5 = moy_stat_last_matchs(x=pct_second_serves_points_won, N=5)) %>%
   mutate(avg_pct_ace_last_5 = moy_stat_last_matchs(x=pct_aces, N=5)) %>%
   mutate(avg_pct_double_faults_last_5 = moy_stat_last_matchs(x=pct_double_faults, N=5)) %>%
   # mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
@@ -239,7 +252,7 @@ don_with_stats2 <- don_with_stats %>%
 
 don <- don_with_stats2 %>%
   pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser")) %>% 
-  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","pct_first_serves")))
+  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","avg_pct_first_serves","avg_pct_second_serves")))
 
 rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,match_player_stats,winner_stats)
 
@@ -247,7 +260,8 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 
 ## 2-5 Récupération d'informations sur le tournoi
 
-- Informations sur la surface du terrain (4 possibilités : herbe, terre battue, dur et moquette)
+-   Informations sur la surface du terrain (4 possibilités : herbe,
+    terre battue, dur et moquette)
 
 ```{r}
 tmp <- don %>% 
@@ -261,9 +275,9 @@ don <- tmp
 
 ## 2-6 Mise en forme finale de la base
 
-1 - Il faut doubler la base
-2 - Rajouter une colonne Y dans chacune des base (1 et 0)
-3 - Concaténer les bases
+-   1 - Il faut doubler la base
+-   2 - Rajouter une colonne target dans chacune des base (1 et 0)
+-   3 - Concaténer les bases
 
 ```{r}
 don_winner <- don %>% mutate(target = "1") %>% 
@@ -289,11 +303,24 @@ don <- don_winner %>% bind_rows(don_loser)
   
 ```
 
-Maintenant on ne garde que les variables qui vont servir dans la modélisation
+1.  On ne garde que les variables qui vont servir dans la modélisation
+
+2.  On enlève toutes les valeurs manquantes (pas d'imputation pour
+    l'instant)
+
+3.  On transforme la variable target en factor
 
 ```{r}
-don2 <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
+#1
+don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
+
+#2
+don <- na.omit(don) # on enlève toutes les valeurs manquantes
+
+#3
+don <- don %>% mutate(target = as.factor(target))
+
+saveRDS(don,"don.rds")
 ```
 
-
-
+# II - Comparaison des classifications
