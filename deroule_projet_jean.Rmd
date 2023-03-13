@@ -460,6 +460,18 @@ sort(apply(RES2,2,precis,Y=RES2$Y))
 
 ## 3 - Autres mesures
 
+Comparaison des autres mesures :
+
+1.  Sensibilité (sensibility)
+
+2.  Précision (accuracy)
+
+3.  Spécificité (specificity)
+
+4.  Recall
+
+5.  Spécificité + Sensibilité (utilisé en médecine)
+
 ```{r}
 plot(roc(Y~log,data=RES))
 auctoutlemonde <- roc(Y~.,data=RES)
