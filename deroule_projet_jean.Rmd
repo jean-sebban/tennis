@@ -317,12 +317,16 @@ don <- don_winner %>% bind_rows(don_loser)
 don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
 
 #2
-don <- na.omit(don) # on enlève toutes les valeurs manquantes
+don_avecNA <- don %>% mutate(target = as.factor(target))
 
 #3
-don <- don %>% mutate(target = as.factor(target))
+don_sansNA <- na.omit(don) # on enlève toutes les valeurs manquantes
 
-saveRDS(don,"don.rds")
+
+
+
+saveRDS(don_sansNA,"data/don_sansNA.rds")
+saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
 
 # II - Comparaison des classifications
@@ -338,7 +342,7 @@ library(glmnet)
 ## 1 - Préparation du fichier
 
 ```{r}
-don <- readRDS("don.rds")
+don <- readRDS("data/don_sansNA.rds")
 dim(don)
 #version du fichier don pour les tests
 # don <- don[sample(1:nrow(don),size = 1000),]

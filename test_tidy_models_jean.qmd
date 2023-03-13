@@ -9,9 +9,12 @@ library(tidymodels)
 library(tidyverse)
 ```
 
-## Quarto
+## Data import
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+```{r}
+don <- readRDS("don.rds")
+```
+
 
 ## Running Code
 
