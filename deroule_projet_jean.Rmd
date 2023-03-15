@@ -1,8 +1,10 @@
 ---
 title: "Modélisation de matches de tennis"
 output:
-  pdf_document: default
+  html_document:
+    df_print: paged
   html_notebook: default
+  pdf_document: default
 editor_options:
   markdown:
     wrap: 72
@@ -80,7 +82,7 @@ match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix
 rm(x)
 ```
 
-Ajout de variables dans la base match_stats :
+### 2-2 Ajout de variables dans la base match_stats :
 
 -   pourcentage de premier service
 
@@ -118,7 +120,7 @@ match_stats <- match_stats %>%
 
 ```
 
-## 2 -2 ajout d'information à partir de la base des joueurs
+## 2 -3 ajout d'information à partir de la base des joueurs
 
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
@@ -142,7 +144,7 @@ don <- don %>%
 
 ```
 
-## 2 - 3 ajout d'information à partir de la base du classement
+## 2 - 4 ajout d'information à partir de la base du classement
 
 -   ajout du classement du gagnant et du perdant au moment du match
 
@@ -173,7 +175,7 @@ don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
 
-## 2- 4 ajout d'informations à partir des stats matches
+## 2- 5 ajout d'informations à partir des stats matches
 
 -   1 - pourcentage de matches gagnés sur les x matches précédents
 -   2 - pourcentage de fautes directes/ensemble des points perdus sur
@@ -260,7 +262,7 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 
 ```
 
-## 2-5 Récupération d'informations sur le tournoi
+## 2-6 Récupération d'informations sur le tournoi
 
 -   Informations sur la surface du terrain (4 possibilités : herbe,
     terre battue, dur et moquette)
@@ -275,7 +277,7 @@ don <- tmp
 
 ```
 
-## 2-6 Mise en forme finale de la base
+## 2-7 Mise en forme finale de la base
 
 -   1 - Il faut doubler la base
 -   2 - Rajouter une colonne target dans chacune des base (1 et 0)
@@ -312,6 +314,9 @@ don <- don_winner %>% bind_rows(don_loser)
 
 3.  On transforme la variable target en factor
 
+4.  On stocke deux versions du fichier : avec valeurs manquantes (pour
+    tester les imputations) et sans valeurs manquantes
+
 ```{r}
 #1
 don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
@@ -336,7 +341,6 @@ saveRDS(don_avecNA,"data/don_avecNA.rds")
 library(rpart)
 library(randomForest)
 library(glmnet)
-
 ```
 
 ## 1 - Préparation du fichier
@@ -388,7 +392,7 @@ Les algorithmes suivants sont testés (11 algorithmes en tout)
 Attention : le programme ci-dessous met plus de deux heures pour générer
 le fichier de résultat.
 
-```{r}
+```{r,eval=FALSE}
 for(ii in 1:nb){
   print(ii)
   donA <- don[blocs!=ii,]
@@ -438,6 +442,7 @@ library(purrr)
 
 ## 1 - Test des différents seuils
 
+
 ```{r}
 ########Comparaison des algorithmes de classification-------------
 RES <- readRDS("data/RES.RDS")
@@ -456,7 +461,8 @@ for(ii in 2:ncol(RES2)){
 
 ## 2 - Mesure de la précision
 
-Il s'agit de calculer ici le taux de mal classés (en anglais : accuracy)
+Il s'agit de calculer ici le taux de mal classés (en anglais : accuracy). 
+Notre modèle doit être capable de prédire aussi bien les matches perdus que les matches gagnés. 
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
@@ -478,21 +484,20 @@ Comparaison des autres mesures :
 5.  Spécificité + Sensibilité (utilisé en médecine)
 
 ```{r}
-plot(roc(Y~log,data=RES))
+plot(roc(Y~foret,data=RES))
 auctoutlemonde <- roc(Y~.,data=RES)
-plot(auctoutlemonde$log)
-for(jj in 2:length(auctoutlemonde)){
-  plot(auctoutlemonde[[jj]],add=TRUE,col=jj)
-}
+# plot(auctoutlemonde$log)
+# for(jj in 2:length(auctoutlemonde)){
+#   plot(auctoutlemonde[[jj]],add=TRUE,col=jj)
+# }
 
 
 res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("threshold","sensitivity","accuracy",
                                                 "specificity","recall"))
 rownames(res) <- names(RES)[-1]
-
 res$med=res$specificity+res$sensitivity
 
-arrange(res,-med)
-arrange(res,-accuracy)
-arrange(res,-specificity)
+# arrange(res,-med)
+res <- arrange(res,-accuracy)
+# arrange(res,-specificity)
 ```
