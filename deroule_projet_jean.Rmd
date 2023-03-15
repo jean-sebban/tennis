@@ -325,7 +325,7 @@ don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_cond
 don_avecNA <- don %>% mutate(target = as.factor(target))
 
 #3
-don_sansNA <- na.omit(don) # on enlève toutes les valeurs manquantes
+don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
 
 
 
@@ -341,32 +341,54 @@ saveRDS(don_avecNA,"data/don_avecNA.rds")
 library(rpart)
 library(randomForest)
 library(glmnet)
+library(gbm)
 ```
 
-## 1 - Préparation du fichier
+## 1 - Préparation du fichier : séparation en train et test
+
+Le fichier d'entraînement est constitué des matches entre 1991 et 2015.
+Le fichier test est celui des matches les plus récents : 2016 et 2017.
 
 ```{r}
 don <- readRDS("data/don_sansNA.rds")
-dim(don)
-#version du fichier don pour les tests
-# don <- don[sample(1:nrow(don),size = 1000),]
+
+don <- don %>% mutate(tourney_surface = as.factor(tourney_surface),
+                         tourney_conditions = as.factor(tourney_conditions))
+
+#fichier de test
+don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier d'entraînement
+don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+# dim(don_train)
+
+#version du fichier don avec 1000 matches pour tester les programmes
+don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
 
 #Construction d'une version matrice pour glmnet
-XX <- model.matrix(target~.,data=don)   #version matrice
-YY <- don$target
+XX <- model.matrix(target~.,data=don_train)   #version matrice
+YY <- don_train$target
+
+#Construction d'une version avec target en numerique pour gbm
+
 ```
 
 ## 2 - Validation croisée
 
+Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résulats des différents algorithmes seront stockés dans le dataframe RES.
+
 ```{r}
+don <- don_train
 nb <- 10
 set.seed(1234)
 blocs <- sample(rep(1:10,length = nrow(don)))
 RES <- data.frame(Y=don$target)
 ```
 
-Test avec une validation croisée à 10 blocs. Les résulats des différents
-algorithmes seront stockés dans le dataframe RES.
+
 
 Les algorithmes suivants sont testés (11 algorithmes en tout)
 
@@ -427,7 +449,13 @@ for(ii in 1:nb){
   algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
   RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
   RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+  mobt.ada <- gbm.perf(algo9,method = "cv")
+  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
 }
+
+
 # saveRDS(RES,"RES.RDS")
 ```
 
@@ -436,7 +464,6 @@ for(ii in 1:nb){
 ```{r,warning=FALSE}
 library(pROC)
 library(purrr)
-
 
 ```
 
