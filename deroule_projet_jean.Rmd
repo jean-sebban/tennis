@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Modélisation de matches de tennis"
 output:
   pdf_document: default
   html_notebook: default
@@ -440,7 +440,8 @@ library(purrr)
 
 ```{r}
 ########Comparaison des algorithmes de classification-------------
-RES <- readRDS("RES.RDS")
+RES <- readRDS("data/RES.RDS")
+RES <- RES %>% mutate(alea = runif(n=nrow(RES),min = 0,max = 1))
 # RES <- readRDS("data/classif/RESI.RDS")
 # RES <- readRDS("data/classif/RESP.RDS")
 RES2 <- RES
