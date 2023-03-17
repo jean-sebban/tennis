@@ -366,7 +366,7 @@ don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2016",
 # dim(don_train)
 
 #version du fichier don avec 1000 matches pour tester les programmes
-don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
+# don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
 
 #Construction d'une version matrice pour glmnet
 XX <- model.matrix(target~.,data=don_train)   #version matrice
@@ -450,13 +450,13 @@ for(ii in 1:nb){
   RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
   RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
   # ########################
-  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
-  mobt.ada <- gbm.perf(algo9,method = "cv")
-  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+  # algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+  # mobt.ada <- gbm.perf(algo9,method = "cv")
+  # RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
 }
 
 
-# saveRDS(RES,"RES.RDS")
+saveRDS(RES,"data/RES_training.RDS")
 ```
 
 # III - Mesure de la performance
@@ -473,6 +473,7 @@ library(purrr)
 ```{r}
 ########Comparaison des algorithmes de classification-------------
 RES <- readRDS("data/RES.RDS")
+RES <- readRDS("data/RES_training.RDS")
 RES <- RES %>% mutate(alea = runif(n=nrow(RES),min = 0,max = 1))
 # RES <- readRDS("data/classif/RESI.RDS")
 # RES <- readRDS("data/classif/RESP.RDS")
@@ -527,4 +528,5 @@ res$med=res$specificity+res$sensitivity
 # arrange(res,-med)
 res <- arrange(res,-accuracy)
 # arrange(res,-specificity)
+res
 ```
