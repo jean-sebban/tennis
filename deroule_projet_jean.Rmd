@@ -1,12 +1,20 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Modélisation de matches de tennis"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+editor_options:
+  markdown:
+    wrap: 72
 ---
 
-```{r}
+```{r,warning=FALSE}
 library(tidyverse)
 ```
 
+# I - Avant la modélisation
 
 ## 1 - Importation des fichiers
 
@@ -74,14 +82,21 @@ match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix
 rm(x)
 ```
 
-Ajout de variables dans la base match_stats
-- pourcentage de premier service
-- pourcentage de points gagnés au premier service
-- pourcentage de points gagnés au deuxième service
-- pourcentage de doubles fautes (sur le nombre de services)
-- poucentage d'aces
-- pourcentage de balles de breaks sur les points retournés
-- pourcentage de balles de breaks sur les points servis
+### 2-2 Ajout de variables dans la base match_stats :
+
+-   pourcentage de premier service
+
+-   pourcentage de points gagnés au premier service
+
+-   pourcentage de points gagnés au deuxième service
+
+-   pourcentage de doubles fautes (sur le nombre de services)
+
+-   poucentage d'aces
+
+-   pourcentage de balles de breaks sur les points retournés
+
+-   pourcentage de balles de breaks sur les points servis
 
 ```{r}
 
@@ -105,10 +120,7 @@ match_stats <- match_stats %>%
 
 ```
 
-
-
-## 2 -2 ajout d'information à partir de la base des joueurs
-
+## 2 -3 ajout d'information à partir de la base des joueurs
 
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
@@ -132,12 +144,12 @@ don <- don %>%
 
 ```
 
+## 2 - 4 ajout d'information à partir de la base du classement
 
-## 2 - 3 ajout d'information à partir de la base du classement
+-   ajout du classement du gagnant et du perdant au moment du match
 
-- ajout du classement du gagnant et du perdant au moment du match
-
-A partir de la base des classements, on affecte un classement moyen à chaque joueur pour chaque mois de l'année. 
+A partir de la base des classements, on affecte un classement moyen à
+chaque joueur pour chaque mois de l'année.
 
 ```{r}
 #Calcul de la moyenne de classement par joueur, par mois et par année entre 1991 et 2017
@@ -162,13 +174,16 @@ toto4 <- toto3 %>% left_join(toto,by=c("loser_id_classement" = "id_classement"))
 don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
-2- 4 ajout d'informations à partir des stats matches
 
-* 1 - pourcentage de matches gagnés sur les x matches précédents
-* 2 - pourcentage de fautes directes/ensemble des points perdus sur les x matches précédents
-* 3 - pourcentage de coups gagnants/pointsgagnés sur les x matches précédents
-* 4 - pourcentage de points gagnés au premier service
-* 5 - pourcentage de points gagnés au deuxième service
+## 2- 5 ajout d'informations à partir des stats matches
+
+-   1 - pourcentage de matches gagnés sur les x matches précédents
+-   2 - pourcentage de fautes directes/ensemble des points perdus sur
+    les x matches précédents
+-   3 - pourcentage de coups gagnants/pointsgagnés sur les x matches
+    précédents
+-   4 - pourcentage de points gagnés au premier service
+-   5 - pourcentage de points gagnés au deuxième service
 
 ```{r}
 don_winner <- don %>%
@@ -231,6 +246,8 @@ don_with_stats2 <- don_with_stats %>%
   # mutate(avg_nb_ace = dplyr::lag(cummean(aces))) %>% 
   mutate(avg_pct_first_serves_in_5 = moy_stat_last_matchs(x=pct_first_serves_in, N=5)) %>%
   mutate(avg_pct_first_serves_points_won_5 = moy_stat_last_matchs(x=pct_first_serves_points_won, N=5)) %>%
+  # mutate(avg_pct_second_serves_in_5 = moy_stat_last_matchs(x=pct_second_serves_in, N=5)) %>%
+  mutate(avg_pct_second_serves_points_won_5 = moy_stat_last_matchs(x=pct_second_serves_points_won, N=5)) %>%
   mutate(avg_pct_ace_last_5 = moy_stat_last_matchs(x=pct_aces, N=5)) %>%
   mutate(avg_pct_double_faults_last_5 = moy_stat_last_matchs(x=pct_double_faults, N=5)) %>%
   # mutate(avg_nb_ace_last_3 = (dplyr::lag(aces,n=1)+dplyr::lag(aces,n=2)+dplyr::lag(aces,n=3))/3) %>%
@@ -239,15 +256,16 @@ don_with_stats2 <- don_with_stats %>%
 
 don <- don_with_stats2 %>%
   pivot_wider(id_cols = c("match_stats_url_suffix", "numero_ordre"), names_from = "winner_or_loser", values_from = -matches(match="match_stats_url_suffix|numero_ordre|winner_or_loser")) %>% 
-  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","pct_first_serves")))
+  select(contains(c("match_stats_url_suffix","numero_ordre","weight","height","age","classement","nb_match","avg_pct_ace","avg_pct_double_faults","avg_pct_first_serves","avg_pct_second_serves")))
 
 rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,match_player_stats,winner_stats)
 
 ```
 
-## 2-5 Récupération d'informations sur le tournoi
+## 2-6 Récupération d'informations sur le tournoi
 
-- Informations sur la surface du terrain (4 possibilités : herbe, terre battue, dur et moquette)
+-   Informations sur la surface du terrain (4 possibilités : herbe,
+    terre battue, dur et moquette)
 
 ```{r}
 tmp <- don %>% 
@@ -259,11 +277,11 @@ don <- tmp
 
 ```
 
-## 2-6 Mise en forme finale de la base
+## 2-7 Mise en forme finale de la base
 
-1 - Il faut doubler la base
-2 - Rajouter une colonne Y dans chacune des base (1 et 0)
-3 - Concaténer les bases
+-   1 - Il faut doubler la base
+-   2 - Rajouter une colonne target dans chacune des base (1 et 0)
+-   3 - Concaténer les bases
 
 ```{r}
 don_winner <- don %>% mutate(target = "1") %>% 
@@ -289,11 +307,224 @@ don <- don_winner %>% bind_rows(don_loser)
   
 ```
 
-Maintenant on ne garde que les variables qui vont servir dans la modélisation
+1.  On ne garde que les variables qui vont servir dans la modélisation
+
+2.  On enlève toutes les valeurs manquantes (pas d'imputation pour
+    l'instant)
+
+3.  On transforme la variable target en factor
+
+4.  On stocke deux versions du fichier : avec valeurs manquantes (pour
+    tester les imputations) et sans valeurs manquantes
 
 ```{r}
-don2 <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions)
+#1
+don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
+
+#2
+don_avecNA <- don %>% mutate(target = as.factor(target))
+
+#3
+don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
+
+
+
+
+saveRDS(don_sansNA,"data/don_sansNA.rds")
+saveRDS(don_avecNA,"data/don_avecNA.rds")
+```
+
+# II - Comparaison des classifications
+
+```{r,warning=FALSE}
+#packages utilisés pour faire de la prévision
+library(rpart)
+library(randomForest)
+library(glmnet)
+library(gbm)
+```
+
+## 1 - Préparation du fichier : séparation en train et test
+
+Le fichier d'entraînement est constitué des matches entre 1991 et 2015.
+Le fichier test est celui des matches les plus récents : 2016 et 2017.
+
+```{r}
+don <- readRDS("data/don_sansNA.rds")
+
+don <- don %>% mutate(tourney_surface = as.factor(tourney_surface),
+                         tourney_conditions = as.factor(tourney_conditions))
+
+#fichier de test
+don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier d'entraînement
+don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+# dim(don_train)
+
+#version du fichier don avec 1000 matches pour tester les programmes
+don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
+
+#Construction d'une version matrice pour glmnet
+XX <- model.matrix(target~.,data=don_train)   #version matrice
+YY <- don_train$target
+
+#Construction d'une version avec target en numerique pour gbm
+
+```
+
+## 2 - Validation croisée
+
+Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résulats des différents algorithmes seront stockés dans le dataframe RES.
+
+```{r}
+don <- don_train
+nb <- 10
+set.seed(1234)
+blocs <- sample(rep(1:10,length = nrow(don)))
+RES <- data.frame(Y=don$target)
 ```
 
 
 
+Les algorithmes suivants sont testés (11 algorithmes en tout)
+
+1.  La regression logistique avec toutes les variables (algo1)
+
+2.  La regression logistique en sélectionnant les variables selon le
+    critère AIC (algo2)
+
+3.  La regression logistique en sélectionnant les variables selon BIC
+    (algo3)
+
+4.  Un arbre de regression avec les paramètres par défaut de la fonction
+    rpart
+
+5.  une forêt aléatoire avec les paramètres par défaut de randomForest
+
+6.  Une regression ridge, avec deux lambda différents (deux algos)
+
+7.  Une regression lasso avec deux lambda différents (deux algos)
+
+8.  Une regression elastic net avec deux lambda différents (deux algos)
+
+Attention : le programme ci-dessous met plus de deux heures pour générer
+le fichier de résultat.
+
+```{r,eval=FALSE}
+for(ii in 1:nb){
+  print(ii)
+  donA <- don[blocs!=ii,]
+  donT <- don[blocs==ii,]
+  XXA <- XX[blocs!=ii,]
+  XXT <- XX[blocs==ii,]
+  YYA <- YY[blocs!=ii]
+  ########################
+  algo1 <- glm(target~.,data=donA,family="binomial")
+  RES[blocs==ii,"log"] <- predict(algo1,donT,type="response")
+  ########################
+  algo2 <- step(algo1,trace=0)
+  RES[blocs==ii,"AIC"] <- predict(algo2,donT,type="response")
+  ########################
+  algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
+  RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
+  ########################
+  algo4 <- rpart(target~.,data=donA)
+  RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
+  # ########################
+  algo5 <- randomForest(target~.,data=donA)
+  RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
+  # ########################
+  algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+  RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+  RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+  RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+  RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
+  # ########################
+  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+  mobt.ada <- gbm.perf(algo9,method = "cv")
+  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+}
+
+
+# saveRDS(RES,"RES.RDS")
+```
+
+# III - Mesure de la performance
+
+```{r,warning=FALSE}
+library(pROC)
+library(purrr)
+
+```
+
+## 1 - Test des différents seuils
+
+
+```{r}
+########Comparaison des algorithmes de classification-------------
+RES <- readRDS("data/RES.RDS")
+RES <- RES %>% mutate(alea = runif(n=nrow(RES),min = 0,max = 1))
+# RES <- readRDS("data/classif/RESI.RDS")
+# RES <- readRDS("data/classif/RESP.RDS")
+RES2 <- RES
+
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+```
+
+## 2 - Mesure de la précision
+
+Il s'agit de calculer ici le taux de mal classés (en anglais : accuracy). 
+Notre modèle doit être capable de prédire aussi bien les matches perdus que les matches gagnés. 
+
+```{r}
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
+```
+
+## 3 - Autres mesures
+
+Comparaison des autres mesures :
+
+1.  Sensibilité (sensibility)
+
+2.  Précision (accuracy)
+
+3.  Spécificité (specificity)
+
+4.  Recall
+
+5.  Spécificité + Sensibilité (utilisé en médecine)
+
+```{r}
+plot(roc(Y~foret,data=RES))
+auctoutlemonde <- roc(Y~.,data=RES)
+# plot(auctoutlemonde$log)
+# for(jj in 2:length(auctoutlemonde)){
+#   plot(auctoutlemonde[[jj]],add=TRUE,col=jj)
+# }
+
+
+res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("threshold","sensitivity","accuracy",
+                                                "specificity","recall"))
+rownames(res) <- names(RES)[-1]
+res$med=res$specificity+res$sensitivity
+
+# arrange(res,-med)
+res <- arrange(res,-accuracy)
+# arrange(res,-specificity)
+```
