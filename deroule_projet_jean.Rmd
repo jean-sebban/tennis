@@ -332,7 +332,7 @@ don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
 
 
 
-saveRDS(don_clustering,"don_clustering.rds")
+saveRDS(don_clustering,"data/don_clustering.rds")
 saveRDS(don_sansNA,"data/don_sansNA.rds")
 saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
