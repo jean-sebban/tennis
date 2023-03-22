@@ -96,7 +96,7 @@ rm(x)
 
 -   pourcentage de balles de breaks sur les points retournés
 
--   pourcentage de balles de breaks sur les points servis
+-   pourcentage de balles de breaks sur les points servis 
 
 ```{r}
 
@@ -322,14 +322,17 @@ don <- don_winner %>% bind_rows(don_loser)
 don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
 
 #2
-don_avecNA <- don %>% mutate(target = as.factor(target))
+don_clustering <- don
 
 #3
+don_avecNA <- don %>% mutate(target = as.factor(target))
+
+#4
 don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
 
 
 
-
+saveRDS(don_clustering,"don_clustering.rds")
 saveRDS(don_sansNA,"data/don_sansNA.rds")
 saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
@@ -342,6 +345,7 @@ library(rpart)
 library(randomForest)
 library(glmnet)
 library(gbm)
+library(doParallel)
 ```
 
 ## 1 - Préparation du fichier : séparation en train et test
@@ -366,7 +370,7 @@ don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2016",
 # dim(don_train)
 
 #version du fichier don avec 1000 matches pour tester les programmes
-# don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
+don_train <- don_train[sample(1:nrow(don_train),size = 1000),]
 
 #Construction d'une version matrice pour glmnet
 XX <- model.matrix(target~.,data=don_train)   #version matrice
@@ -374,11 +378,12 @@ YY <- don_train$target
 
 #Construction d'une version avec target en numerique pour gbm
 
+
 ```
 
 ## 2 - Validation croisée
 
-Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résulats des différents algorithmes seront stockés dans le dataframe RES.
+Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résultats des différents algorithmes seront stockés dans le dataframe RES.
 
 ```{r}
 don <- don_train
@@ -450,9 +455,9 @@ for(ii in 1:nb){
   RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
   RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
   # ########################
-  # algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
-  # mobt.ada <- gbm.perf(algo9,method = "cv")
-  # RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+  mobt.ada <- gbm.perf(algo9,method = "cv")
+  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
 }
 
 
