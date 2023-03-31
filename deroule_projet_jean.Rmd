@@ -175,9 +175,9 @@ don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
 
-## 2- 5 ajout d'informations à partir des stats matches
+## 2- 5 ajout d'informations à partir des stats des matches précédents
 
--   1 - pourcentage de matches gagnés sur les x matches précédents
+-   1 - nombre de matches gagnés sur les x matches précédents
 -   2 - pourcentage de fautes directes/ensemble des points perdus sur
     les x matches précédents
 -   3 - pourcentage de coups gagnants/pointsgagnés sur les x matches
@@ -277,7 +277,19 @@ don <- tmp
 
 ```
 
-## 2-7 Mise en forme finale de la base
+## 2-7 Ajout de variables calculées
+
+- AJout d'une variable avec la différence de classement entre le joueur 2 et le joueur 1. Une différence négative indique que le joueur 2 est moins bien classé que le joueur 1.
+
+```{r}
+tmp <- don %>% 
+  mutate(classement_diff = classement_loser - classement_winner)
+don <- tmp
+rm(tmp)
+```
+
+
+## 2-8 Mise en forme avant la modélisation
 
 -   1 - Il faut doubler la base
 -   2 - Rajouter une colonne target dans chacune des base (1 et 0)
@@ -302,10 +314,11 @@ don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c
   rename_with(function(x){sub('_loser', '_j2', x)})
 
 don <- don_winner %>% bind_rows(don_loser)
-  
-# rename_with(function(x){sub('_winner', 'j1', x)}) %>% 
+
   
 ```
+
+
 
 1.  On ne garde que les variables qui vont servir dans la modélisation
 
@@ -319,7 +332,12 @@ don <- don_winner %>% bind_rows(don_loser)
 
 ```{r}
 #1
-don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
+don <- don %>% select(target,
+                      contains(c("j1","j2")),
+                      tourney_surface,
+                      tourney_conditions,
+                      classement_diff,
+                      match_stats_url_suffix)
 
 #2
 don_clustering <- don
@@ -383,7 +401,7 @@ YY <- don_train$target
 
 ## 2 - Validation croisée
 
-Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résultats des différents algorithmes seront stockés dans le dataframe RES.
+Test avec une validation croisée à 10 blocs sur les données d'entraînement. Les résultats des différents algorithmes seront stockés dans le dataframe RES.
 
 ```{r}
 don <- don_train
