@@ -120,7 +120,7 @@ match_stats <- match_stats %>%
 
 ```
 
-## 2 -3 ajout d'information à partir de la base des joueurs
+## 2 -3 Ajout d'information à partir de la base des joueurs
 
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
@@ -144,7 +144,7 @@ don <- don %>%
 
 ```
 
-## 2 - 4 ajout d'information à partir de la base du classement
+## 2 - 4 Ajout d'information à partir de la base du classement
 
 -   ajout du classement du gagnant et du perdant au moment du match
 
@@ -175,7 +175,7 @@ don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
 
-## 2- 5 ajout d'informations à partir des stats des matches précédents
+## 2- 5 Ajout d'informations à partir des stats des matches précédents
 
 -   1 - nombre de matches gagnés sur les x matches précédents
 -   2 - pourcentage de fautes directes/ensemble des points perdus sur
@@ -277,19 +277,15 @@ don <- tmp
 
 ```
 
-## 2-7 Ajout de variables calculées
 
-- AJout d'une variable avec la différence de classement entre le joueur 2 et le joueur 1. Une différence négative indique que le joueur 2 est moins bien classé que le joueur 1.
 
-```{r}
-tmp <- don %>% 
-  mutate(classement_diff = classement_loser - classement_winner)
-don <- tmp
-rm(tmp)
-```
+
+
 
 
 ## 2-8 Mise en forme avant la modélisation
+
+### Etape 1
 
 -   1 - Il faut doubler la base
 -   2 - Rajouter une colonne target dans chacune des base (1 et 0)
@@ -315,10 +311,11 @@ don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c
 
 don <- don_winner %>% bind_rows(don_loser)
 
+rm(don_loser,don_loser_part1,don_loser_part2,don_winner)
   
 ```
 
-
+### Etape 2
 
 1.  On ne garde que les variables qui vont servir dans la modélisation
 
@@ -327,31 +324,36 @@ don <- don_winner %>% bind_rows(don_loser)
 
 3.  On transforme la variable target en factor
 
-4.  On stocke deux versions du fichier : avec valeurs manquantes (pour
+4. on ajoute des variables calculées :
+    - différence entre les classements des joueurs
+
+5.  On stocke plusieurs versions du fichier : avec valeurs manquantes (pour
     tester les imputations) et sans valeurs manquantes
 
 ```{r}
 #1
-don <- don %>% select(target,
-                      contains(c("j1","j2")),
+don <- don %>% 
+  select(target,contains(c("j1","j2")),
                       tourney_surface,
                       tourney_conditions,
-                      classement_diff,
-                      match_stats_url_suffix)
+                      match_stats_url_suffix) 
+  
 
 #2
-don_clustering <- don
+don_sansNA <- na.omit(don)
 
 #3
-don_avecNA <- don %>% mutate(target = as.factor(target))
+don_sansNA <- don_sansNA %>%  mutate(target = as.factor(target))
 
-#4
-don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
+#4 on ajoute des variables calculées
 
+# - AJout d'une variable avec la différence de classement entre le joueur 2 et le joueur 1. Une différence négative indique que le joueur 2 est moins bien classé que le joueur 1.
+don_sansNA <- don_sansNA %>% 
+  mutate(classement_diff = classement_j2 - classement_j1)
 
-
+#5
 # saveRDS(don_clustering,"data/don_clustering.rds")
-# saveRDS(don_sansNA,"data/don_sansNA.rds")
+saveRDS(don_sansNA,"data/don_sansNA.rds")
 # saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
 

@@ -5,7 +5,7 @@ library(sparkline)
 
 data <- readRDS("./data/don_sansNA.rds") %>% 
   select(-starts_with("match")) %>% 
-  mutate_if(is.character, as.factor)
+  mutate_if(is.character, as.factor) #tous les characters transformés en factor
 
 skimr::skim(data)
 
