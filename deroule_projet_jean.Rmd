@@ -558,10 +558,14 @@ RES <- data.frame(Y=don_train_valid$target)
  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
  RES[,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
  RES[,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################gradient boosting
+ #  # ########################gradient boosting avec adaboost
  algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
  mobt.ada <- gbm.perf(algo9,method = "cv")
  RES[,"adaboost"] <-predict(algo9,newdata = don_train_valid_gb,type = "response",n.trees = mobt.ada)
+  #  # ########################gradient boosting avec logitboost
+ algo10 <- gbm(target~.,data=don_train_app_gb,distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+ mobt.logit <- gbm.perf(algo10,method = "cv")
+ RES[,"logitboost"] <-predict(algo10,newdata = don_train_valid_gb,type = "response",n.trees = mobt.logit)
 ```
 
 
