@@ -684,6 +684,8 @@ Application du random forest sur le fichier d'entraînement
 RES <- data.frame(Y=don_test$target)
 algo5 <- randomForest(target~.,data=don_train)
 RES[,"foret"] <- predict(algo5,don_test,type="prob")[,2]
+
+saveRDS(RES,"data/RES_generalisation.rds")
 ```
 
 Vérification des résultats
