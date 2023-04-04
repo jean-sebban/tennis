@@ -267,6 +267,8 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 -   Informations sur la surface du terrain (4 possibilités : herbe,
     terre battue, dur et moquette)
 
+Dans les tournois récents, il n'y a plus de tournois sur moquette, donc il faut peut-être enlever ces matches des modèles.
+
 ```{r}
 tmp <- don %>% 
   left_join(match_scores[,c("match_stats_url_suffix","tourney_url_suffix")],by="match_stats_url_suffix") %>% 
@@ -388,13 +390,7 @@ don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2
 don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
-#fichier de validation
-don_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
-  select(-match_stats_url_suffix)
 
-#fichier d'apprentissage
-don_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
-  select(-match_stats_url_suffix)
 
 # dim(don_train)
 
@@ -495,41 +491,77 @@ saveRDS(RES,"data/RES_training.RDS")
 
 ## 3 - Validation simple
 
+Le fichier d'entraînement créé plus haut est divisé en un fichier d'entraînement et un fichier de validation.
+
+```{r}
+#fichier de validation
+don_train_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier d'apprentissage contenant tous les matches de 1991 à 2012 
+#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
+don_train_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
+  select(-match_stats_url_suffix) %>% 
+  filter(tourney_surface != "carpet")
+
+#Construction d'une version matrice pour glmnet : apprentissage
+XXA <- model.matrix(target~.,data=don_train_app)   #version matrice
+YYA <- don_train_app$target
+
+XXT <- model.matrix(target~.,data=don_train_valid)
+
+#Fichier d'apprentissage pour gradient boosting
+don_train_app_gb <- don_train_app %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))  
+  
+
+#fichier de validation pour gradient boosting
+don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1)) 
+
+```
+
+
 ```{r}
 
-RES <- data.frame(Y=don_valid$target)
+#prédiction sur le fichier de validation (2013 et 2014)
+RES <- data.frame(Y=don_train_valid$target)
 
  # ########################
- #  algo1 <- glm(target~.,data=don_app,family="binomial")
- #  RES[,"log"] <- predict(algo1,don_valid,type="response")
+  algo1 <- glm(target~.,data=don_train_app,family="binomial")
+  RES[,"log"] <- predict(algo1,don_train_valid,type="response")
  #  ########################
- #  algo2 <- step(algo1,trace=0)
- #  RES[blocs==ii,"AIC"] <- predict(algo2,donT,type="response")
- #  ########################
- #  algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
- #  RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
- #  ########################
- #  algo4 <- rpart(target~.,data=donA)
- #  RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
- #  # ########################
- #  algo5 <- randomForest(target~.,data=donA)
- #  RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
- #  # ########################
- #  algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
- #  RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
- #  RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
- #  RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
- #  mobt.ada <- gbm.perf(algo9,method = "cv")
- #  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+  algo2 <- step(algo1,trace=0)
+  RES[,"AIC"] <- predict(algo2,don_train_valid,type="response")
+ #  ########################reg logistique
+  algo3 <- step(algo1,trace=0,k=log(nrow(don_train_app)))
+  RES[,"BIC"] <- predict(algo3,don_train_valid,type="response")
+ #  ########################arbre
+ algo4 <- rpart(target~.,data=don_train_app)
+ RES[,"arbre"] <- predict(algo4,don_train_valid)[,2]
+ #  # ########################forêt aléatoire
+ algo5 <- randomForest(target~.,data=don_train_app)
+ RES[,"foret"] <- predict(algo5,don_train_valid,type="prob")[,2]
+ #  # ########################régression ridge
+ algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+ RES[,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+ RES[,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################régression lasso
+ algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+ RES[,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+ RES[,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################régression lasso
+ algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+ RES[,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+ RES[,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################gradient boosting
+ algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+ mobt.ada <- gbm.perf(algo9,method = "cv")
+ RES[,"adaboost"] <-predict(algo9,newdata = don_train_valid_gb,type = "response",n.trees = mobt.ada)
 ```
 
 
