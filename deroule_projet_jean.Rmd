@@ -531,6 +531,8 @@ don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
 #prédiction sur le fichier de validation (2013 et 2014)
 RES <- data.frame(Y=don_train_valid$target)
 
+#attention : programme assez long à tourner
+
  # ########################
   algo1 <- glm(target~.,data=don_train_app,family="binomial")
   RES[,"log"] <- predict(algo1,don_train_valid,type="response")
@@ -566,6 +568,8 @@ RES <- data.frame(Y=don_train_valid$target)
  algo10 <- gbm(target~.,data=don_train_app_gb,distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
  mobt.logit <- gbm.perf(algo10,method = "cv")
  RES[,"logitboost"] <-predict(algo10,newdata = don_train_valid_gb,type = "response",n.trees = mobt.logit)
+ 
+ saveRDS(RES,"data/RES_app_valid.RDS")
 ```
 
 
@@ -584,7 +588,7 @@ library(purrr)
 ########Comparaison des algorithmes de classification-------------
 RES <- readRDS("data/RES.RDS")
 RES <- readRDS("data/RES_training.RDS")
-RES <- RES %>% mutate(alea = runif(n=nrow(RES),min = 0,max = 1))
+RES <- readRDS("data/RES_app_valid.rds")
 # RES <- readRDS("data/classif/RESI.RDS")
 # RES <- readRDS("data/classif/RESP.RDS")
 RES2 <- RES
@@ -636,8 +640,68 @@ res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("threshold","sensitivity","accur
 rownames(res) <- names(RES)[-1]
 res$med=res$specificity+res$sensitivity
 
-# arrange(res,-med)
-res <- arrange(res,-accuracy)
-# arrange(res,-specificity)
-res
+#tri selon le taux de mal classés
+perf <- arrange(res,-accuracy)
+perf
+
+saveRDS(perf,"data/perf_app_valid.rds")
 ```
+# 4 - Généralisation du modèle retenu
+
+Le modèle retenu est donc la random forest. On la recalcule sur tout le fichier d'entraînement (en prenant en compte les 3 années du fichier de validation).
+
+
+```{r}
+
+#fichier d'apprentissage contenant tous les matches de 1991 à 2014 
+#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
+don_train <- don_train  %>% 
+  filter(tourney_surface != "carpet")
+
+#Construction d'une version matrice pour glmnet : apprentissage
+XXA <- model.matrix(target~.,data=don_train)   #version matrice
+YYA <- don_train_app$target
+
+XXT <- model.matrix(target~.,data=don_test)
+
+# #Fichier d'apprentissage pour gradient boosting
+# don_train <- don_train %>% mutate(target = as.numeric(target),
+#                                              target = case_when(
+#                                                target == 1 ~ 0,
+#                                                target == 2 ~ 1))  
+#   
+# 
+# #fichier de validation pour gradient boosting
+# don_test <- don_test %>% mutate(target = as.numeric(target),
+#                                              target = case_when(
+#                                                target == 1 ~ 0,
+#                                                target == 2 ~ 1)) 
+```
+
+Application du random forest sur le fichier d'entraînement
+
+```{r}
+RES <- data.frame(Y=don_test$target)
+algo5 <- randomForest(target~.,data=don_train)
+RES[,"foret"] <- predict(algo5,don_test,type="prob")[,2]
+```
+
+Vérification des résultats
+
+```{r}
+RES2 <- RES
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+```
+
+#Mesure de la précision
+
+```{r}
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
+```
+
