@@ -96,7 +96,7 @@ rm(x)
 
 -   pourcentage de balles de breaks sur les points retournés
 
--   pourcentage de balles de breaks sur les points servis 
+-   pourcentage de balles de breaks sur les points servis
 
 ```{r}
 
@@ -120,7 +120,7 @@ match_stats <- match_stats %>%
 
 ```
 
-## 2 -3 ajout d'information à partir de la base des joueurs
+## 2 -3 Ajout d'information à partir de la base des joueurs
 
 ```{r}
 # 4-1 Ajout d'informations à partir de la base des joueurs (taille, poids, âge)-------
@@ -144,7 +144,7 @@ don <- don %>%
 
 ```
 
-## 2 - 4 ajout d'information à partir de la base du classement
+## 2 - 4 Ajout d'information à partir de la base du classement
 
 -   ajout du classement du gagnant et du perdant au moment du match
 
@@ -175,9 +175,9 @@ don <- toto4
 rm(toto,toto2,toto3,toto4)
 ```
 
-## 2- 5 ajout d'informations à partir des stats matches
+## 2- 5 Ajout d'informations à partir des stats des matches précédents
 
--   1 - pourcentage de matches gagnés sur les x matches précédents
+-   1 - nombre de matches gagnés sur les x matches précédents
 -   2 - pourcentage de fautes directes/ensemble des points perdus sur
     les x matches précédents
 -   3 - pourcentage de coups gagnants/pointsgagnés sur les x matches
@@ -277,7 +277,9 @@ don <- tmp
 
 ```
 
-## 2-7 Mise en forme finale de la base
+## 2-8 Mise en forme avant la modélisation
+
+### Etape 1
 
 -   1 - Il faut doubler la base
 -   2 - Rajouter une colonne target dans chacune des base (1 et 0)
@@ -302,10 +304,12 @@ don_loser <- don_loser_part1 %>% bind_cols(don_loser_part2) %>% bind_cols(don[,c
   rename_with(function(x){sub('_loser', '_j2', x)})
 
 don <- don_winner %>% bind_rows(don_loser)
-  
-# rename_with(function(x){sub('_winner', 'j1', x)}) %>% 
+
+rm(don_loser,don_loser_part1,don_loser_part2,don_winner)
   
 ```
+
+### Etape 2
 
 1.  On ne garde que les variables qui vont servir dans la modélisation
 
@@ -314,26 +318,37 @@ don <- don_winner %>% bind_rows(don_loser)
 
 3.  On transforme la variable target en factor
 
-4.  On stocke deux versions du fichier : avec valeurs manquantes (pour
-    tester les imputations) et sans valeurs manquantes
+4.  on ajoute des variables calculées :
+
+    -   différence entre les classements des joueurs
+
+5.  On stocke plusieurs versions du fichier : avec valeurs manquantes
+    (pour tester les imputations) et sans valeurs manquantes
 
 ```{r}
 #1
-don <- don %>% select(target,contains(c("j1","j2")),tourney_surface,tourney_conditions,match_stats_url_suffix)
+don <- don %>% 
+  select(target,contains(c("j1","j2")),
+                      tourney_surface,
+                      tourney_conditions,
+                      match_stats_url_suffix) 
+  
 
 #2
-don_clustering <- don
+don_sansNA <- na.omit(don)
 
 #3
-don_avecNA <- don %>% mutate(target = as.factor(target))
+don_sansNA <- don_sansNA %>%  mutate(target = as.factor(target))
 
-#4
-don_sansNA <- na.omit(don_avecNA) # on enlève toutes les valeurs manquantes
+#4 on ajoute des variables calculées
 
+# - AJout d'une variable avec la différence de classement entre le joueur 2 et le joueur 1. Une différence négative indique que le joueur 2 est moins bien classé que le joueur 1.
+don_sansNA <- don_sansNA %>% 
+  mutate(classement_diff = classement_j2 - classement_j1)
 
-
+#5
 # saveRDS(don_clustering,"data/don_clustering.rds")
-# saveRDS(don_sansNA,"data/don_sansNA.rds")
+saveRDS(don_sansNA,"data/don_sansNA.rds")
 # saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
 
@@ -350,8 +365,14 @@ library(doParallel)
 
 ## 1 - Préparation du fichier : séparation en train et test
 
-Le fichier d'entraînement est constitué des matches entre 1991 et 2015.
-Le fichier test est celui des matches les plus récents : 2016 et 2017.
+Le fichier d'entraînement est constitué des matches entre 1991 et 2014.
+Ce fichier est lui même séparé en deux :
+
+-   un fichier d'apprentissage (1991 à 2012)
+
+-   un fichier de validation (2013 et 2014)
+
+Le fichier test est celui des matches les plus récents : 2015 et 2017.
 
 ```{r}
 don <- readRDS("data/don_sansNA.rds")
@@ -360,11 +381,19 @@ don <- don %>% mutate(tourney_surface = as.factor(tourney_surface),
                          tourney_conditions = as.factor(tourney_conditions))
 
 #fichier de test
-don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
 #fichier d'entraînement
-don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2016","2017")) %>% 
+don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier de validation
+don_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier d'apprentissage
+don_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
 # dim(don_train)
@@ -383,7 +412,9 @@ YY <- don_train$target
 
 ## 2 - Validation croisée
 
-Test avec une validation croisée à 10 blocs sur les données d'entraîenement. Les résultats des différents algorithmes seront stockés dans le dataframe RES.
+Test avec une validation croisée à 10 blocs sur les données
+d'entraînement. Les résultats des différents algorithmes seront stockés
+dans le dataframe RES.
 
 ```{r}
 don <- don_train
@@ -392,8 +423,6 @@ set.seed(1234)
 blocs <- sample(rep(1:10,length = nrow(don)))
 RES <- data.frame(Y=don$target)
 ```
-
-
 
 Les algorithmes suivants sont testés (11 algorithmes en tout)
 
@@ -464,6 +493,47 @@ for(ii in 1:nb){
 saveRDS(RES,"data/RES_training.RDS")
 ```
 
+## 3 - Validation simple
+
+```{r}
+
+RES <- data.frame(Y=don_valid$target)
+
+ # ########################
+ #  algo1 <- glm(target~.,data=don_app,family="binomial")
+ #  RES[,"log"] <- predict(algo1,don_valid,type="response")
+ #  ########################
+ #  algo2 <- step(algo1,trace=0)
+ #  RES[blocs==ii,"AIC"] <- predict(algo2,donT,type="response")
+ #  ########################
+ #  algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
+ #  RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
+ #  ########################
+ #  algo4 <- rpart(target~.,data=donA)
+ #  RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
+ #  # ########################
+ #  algo5 <- randomForest(target~.,data=donA)
+ #  RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
+ #  # ########################
+ #  algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+ #  RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+ #  RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################
+ #  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+ #  RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+ #  RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################
+ #  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+ #  RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+ #  RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################
+ #  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+ #  mobt.ada <- gbm.perf(algo9,method = "cv")
+ #  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+```
+
+
+
 # III - Mesure de la performance
 
 ```{r,warning=FALSE}
@@ -473,7 +543,6 @@ library(purrr)
 ```
 
 ## 1 - Test des différents seuils
-
 
 ```{r}
 ########Comparaison des algorithmes de classification-------------
@@ -494,8 +563,9 @@ for(ii in 2:ncol(RES2)){
 
 ## 2 - Mesure de la précision
 
-Il s'agit de calculer ici le taux de mal classés (en anglais : accuracy). 
-Notre modèle doit être capable de prédire aussi bien les matches perdus que les matches gagnés. 
+Il s'agit de calculer ici le taux de mal classés (en anglais :
+accuracy). Notre modèle doit être capable de prédire aussi bien les
+matches perdus que les matches gagnés.
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
