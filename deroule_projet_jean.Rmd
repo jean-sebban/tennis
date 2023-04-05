@@ -646,6 +646,7 @@ perf
 
 saveRDS(perf,"data/perf_app_valid.rds")
 ```
+
 # 4 - Généralisation du modèle retenu
 
 Le modèle retenu est donc la random forest. On la recalcule sur tout le fichier d'entraînement (en prenant en compte les 3 années du fichier de validation).
@@ -700,7 +701,7 @@ for(ii in 2:ncol(RES2)){
 }
 ```
 
-#Mesure de la précision
+# Mesure de la précision
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
