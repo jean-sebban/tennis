@@ -411,6 +411,7 @@ YY <- don_train$target
 Test avec une validation croisée à 10 blocs sur les données
 d'entraînement. Les résultats des différents algorithmes seront stockés
 dans le dataframe RES.
+Le problème de cette méthode telle qu'elle est développée ci-après est qu'elle ne considère pas les données comme inscrites dans le temps. Les matches du passé seront utilisés pour prédire les matches à venir.
 
 ```{r}
 don <- don_train
@@ -489,7 +490,7 @@ for(ii in 1:nb){
 saveRDS(RES,"data/RES_training.RDS")
 ```
 
-## 3 - Validation simple
+## 3 - Validation out of bag
 
 Le fichier d'entraînement créé plus haut est divisé en un fichier d'entraînement et un fichier de validation.
 
@@ -531,7 +532,7 @@ don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
 #prédiction sur le fichier de validation (2013 et 2014)
 RES <- data.frame(Y=don_train_valid$target)
 
-#attention : programme assez long à tourner
+#attention : programme assez long à faire tourner
 
  # ########################
   algo1 <- glm(target~.,data=don_train_app,family="binomial")
@@ -649,7 +650,9 @@ saveRDS(perf,"data/perf_app_valid.rds")
 
 # 4 - Généralisation du modèle retenu
 
-Le modèle retenu est donc la random forest. On la recalcule sur tout le fichier d'entraînement (en prenant en compte les 3 années du fichier de validation).
+L'algorithme retenu est donc le random forest. On le recalcule sur tout le fichier d'entraînement (en intégrant les matches des annéees 2013 à 2014). Et on le généralise sur le fichier qui n'a pas du tout été utilisé pour construire  le modèle : le fichier test (avec les matches des années 2015, 2016 et 2017).
+
+Les matches sur moquette ne sont pas utilisés dans l'algorithme.
 
 
 ```{r}
@@ -679,7 +682,7 @@ XXT <- model.matrix(target~.,data=don_test)
 #                                                target == 2 ~ 1)) 
 ```
 
-Application du random forest sur le fichier d'entraînement
+## Application du random forest sur le fichier d'entraînement
 
 ```{r}
 RES <- data.frame(Y=don_test$target)
@@ -689,7 +692,7 @@ RES[,"foret"] <- predict(algo5,don_test,type="prob")[,2]
 saveRDS(RES,"data/RES_generalisation.rds")
 ```
 
-Vérification des résultats
+## Vérification des résultats
 
 ```{r}
 RES2 <- RES
@@ -701,7 +704,7 @@ for(ii in 2:ncol(RES2)){
 }
 ```
 
-# Mesure de la précision
+## Mesure de la précision
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
