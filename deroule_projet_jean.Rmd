@@ -267,6 +267,8 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 -   Informations sur la surface du terrain (4 possibilités : herbe,
     terre battue, dur et moquette)
 
+Dans les tournois récents, il n'y a plus de tournois sur moquette, donc il faut peut-être enlever ces matches des modèles.
+
 ```{r}
 tmp <- don %>% 
   left_join(match_scores[,c("match_stats_url_suffix","tourney_url_suffix")],by="match_stats_url_suffix") %>% 
@@ -388,13 +390,7 @@ don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2
 don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
-#fichier de validation
-don_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
-  select(-match_stats_url_suffix)
 
-#fichier d'apprentissage
-don_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
-  select(-match_stats_url_suffix)
 
 # dim(don_train)
 
@@ -415,6 +411,7 @@ YY <- don_train$target
 Test avec une validation croisée à 10 blocs sur les données
 d'entraînement. Les résultats des différents algorithmes seront stockés
 dans le dataframe RES.
+Le problème de cette méthode telle qu'elle est développée ci-après est qu'elle ne considère pas les données comme inscrites dans le temps. Les matches du passé seront utilisés pour prédire les matches à venir.
 
 ```{r}
 don <- don_train
@@ -493,43 +490,87 @@ for(ii in 1:nb){
 saveRDS(RES,"data/RES_training.RDS")
 ```
 
-## 3 - Validation simple
+## 3 - Validation out of bag
+
+Le fichier d'entraînement créé plus haut est divisé en un fichier d'entraînement et un fichier de validation.
+
+```{r}
+#fichier de validation
+don_train_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier d'apprentissage contenant tous les matches de 1991 à 2012 
+#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
+don_train_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
+  select(-match_stats_url_suffix) %>% 
+  filter(tourney_surface != "carpet")
+
+#Construction d'une version matrice pour glmnet : apprentissage
+XXA <- model.matrix(target~.,data=don_train_app)   #version matrice
+YYA <- don_train_app$target
+
+XXT <- model.matrix(target~.,data=don_train_valid)
+
+#Fichier d'apprentissage pour gradient boosting
+don_train_app_gb <- don_train_app %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))  
+  
+
+#fichier de validation pour gradient boosting
+don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1)) 
+
+```
+
 
 ```{r}
 
-RES <- data.frame(Y=don_valid$target)
+#prédiction sur le fichier de validation (2013 et 2014)
+RES <- data.frame(Y=don_train_valid$target)
+
+#attention : programme assez long à faire tourner
 
  # ########################
- #  algo1 <- glm(target~.,data=don_app,family="binomial")
- #  RES[,"log"] <- predict(algo1,don_valid,type="response")
+  algo1 <- glm(target~.,data=don_train_app,family="binomial")
+  RES[,"log"] <- predict(algo1,don_train_valid,type="response")
  #  ########################
- #  algo2 <- step(algo1,trace=0)
- #  RES[blocs==ii,"AIC"] <- predict(algo2,donT,type="response")
- #  ########################
- #  algo3 <- step(algo1,trace=0,k=log(nrow(donA)))
- #  RES[blocs==ii,"BIC"] <- predict(algo3,donT,type="response")
- #  ########################
- #  algo4 <- rpart(target~.,data=donA)
- #  RES[blocs==ii,"arbre"] <- predict(algo4,donT)[,2]
- #  # ########################
- #  algo5 <- randomForest(target~.,data=donA)
- #  RES[blocs==ii,"foret"] <- predict(algo5,donT,type="prob")[,2]
- #  # ########################
- #  algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
- #  RES[blocs==ii,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
- #  RES[blocs==ii,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
- #  RES[blocs==ii,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
- #  RES[blocs==ii,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
- #  # ########################
- #  algo9 <- gbm(target~.,data=donA,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
- #  mobt.ada <- gbm.perf(algo9,method = "cv")
- #  RES[blocs==ii,"adaboost"] <-predict(algo9,newdata = donT,type = "response",n.trees = mobt.ada)
+  algo2 <- step(algo1,trace=0)
+  RES[,"AIC"] <- predict(algo2,don_train_valid,type="response")
+ #  ########################reg logistique
+  algo3 <- step(algo1,trace=0,k=log(nrow(don_train_app)))
+  RES[,"BIC"] <- predict(algo3,don_train_valid,type="response")
+ #  ########################arbre
+ algo4 <- rpart(target~.,data=don_train_app)
+ RES[,"arbre"] <- predict(algo4,don_train_valid)[,2]
+ #  # ########################forêt aléatoire
+ algo5 <- randomForest(target~.,data=don_train_app)
+ RES[,"foret"] <- predict(algo5,don_train_valid,type="prob")[,2]
+ #  # ########################régression ridge
+ algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+ RES[,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response")
+ RES[,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################régression lasso
+ algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+ RES[,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response")
+ RES[,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################régression lasso
+ algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+ RES[,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response")
+ RES[,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response")
+ #  # ########################gradient boosting avec adaboost
+ algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+ mobt.ada <- gbm.perf(algo9,method = "cv")
+ RES[,"adaboost"] <-predict(algo9,newdata = don_train_valid_gb,type = "response",n.trees = mobt.ada)
+  #  # ########################gradient boosting avec logitboost
+ algo10 <- gbm(target~.,data=don_train_app_gb,distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+ mobt.logit <- gbm.perf(algo10,method = "cv")
+ RES[,"logitboost"] <-predict(algo10,newdata = don_train_valid_gb,type = "response",n.trees = mobt.logit)
+ 
+ saveRDS(RES,"data/RES_app_valid.RDS")
 ```
 
 
@@ -548,7 +589,7 @@ library(purrr)
 ########Comparaison des algorithmes de classification-------------
 RES <- readRDS("data/RES.RDS")
 RES <- readRDS("data/RES_training.RDS")
-RES <- RES %>% mutate(alea = runif(n=nrow(RES),min = 0,max = 1))
+RES <- readRDS("data/RES_app_valid.rds")
 # RES <- readRDS("data/classif/RESI.RDS")
 # RES <- readRDS("data/classif/RESP.RDS")
 RES2 <- RES
@@ -600,8 +641,73 @@ res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("threshold","sensitivity","accur
 rownames(res) <- names(RES)[-1]
 res$med=res$specificity+res$sensitivity
 
-# arrange(res,-med)
-res <- arrange(res,-accuracy)
-# arrange(res,-specificity)
-res
+#tri selon le taux de mal classés
+perf <- arrange(res,-accuracy)
+perf
+
+saveRDS(perf,"data/perf_app_valid.rds")
 ```
+
+# 4 - Généralisation du modèle retenu
+
+L'algorithme retenu est donc le random forest. On le recalcule sur tout le fichier d'entraînement (en intégrant les matches des annéees 2013 à 2014). Et on le généralise sur le fichier qui n'a pas du tout été utilisé pour construire  le modèle : le fichier test (avec les matches des années 2015, 2016 et 2017).
+
+Les matches sur moquette ne sont pas utilisés dans l'algorithme.
+
+
+```{r}
+
+#fichier d'apprentissage contenant tous les matches de 1991 à 2014 
+#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
+don_train <- don_train  %>% 
+  filter(tourney_surface != "carpet")
+
+#Construction d'une version matrice pour glmnet : apprentissage
+XXA <- model.matrix(target~.,data=don_train)   #version matrice
+YYA <- don_train_app$target
+
+XXT <- model.matrix(target~.,data=don_test)
+
+# #Fichier d'apprentissage pour gradient boosting
+# don_train <- don_train %>% mutate(target = as.numeric(target),
+#                                              target = case_when(
+#                                                target == 1 ~ 0,
+#                                                target == 2 ~ 1))  
+#   
+# 
+# #fichier de validation pour gradient boosting
+# don_test <- don_test %>% mutate(target = as.numeric(target),
+#                                              target = case_when(
+#                                                target == 1 ~ 0,
+#                                                target == 2 ~ 1)) 
+```
+
+## Application du random forest sur le fichier d'entraînement
+
+```{r}
+RES <- data.frame(Y=don_test$target)
+algo5 <- randomForest(target~.,data=don_train)
+RES[,"foret"] <- predict(algo5,don_test,type="prob")[,2]
+
+saveRDS(RES,"data/RES_generalisation.rds")
+```
+
+## Vérification des résultats
+
+```{r}
+RES2 <- RES
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+```
+
+## Mesure de la précision
+
+```{r}
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
+```
+
