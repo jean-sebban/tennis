@@ -380,10 +380,24 @@ data <- readRDS("./data/don_sansNA.rds") %>%
 
 #On définit des variables quanti sup (différence de classement) 
 #et des variables quali sup (surface et conditions)
-res.pca <- PCA(dplyr::sample_n(data, 10000)[,-23],quali.sup = c(1,22))
+
+#modèle avec seulement la surface en quali
+res.pca <- PCA(dplyr::sample_n(data, 1000)[,-c(1,23)],quali.sup = 21,quanti.sup = 22)
 
 #Pourcentage d'inertie associée à chaque dimension de l'ACP
 barplot(res.pca$eig[,2],names=paste("Dim",1:nrow(res.pca$eig)))
+
+#représentation des individus sur les axes 1 et 2
+plot(res.pca, choix="ind",select = "cos2 0.6",habillage = 21)
+plot(res.pca, choix="var",habillage=21)
+
+#représentation des individus sur les axes 3 et 4
+plot(res.pca, choix="ind",select = "cos2 0.6",axes=3:4,habillage = 21)
+plot(res.pca, choix="var",select = "cos2 0.6",axes=3:4,habillage=21)
+
+#Description automatique des axes de l'ACP
+dimdesc(res.pca,proba=0.2)
+
 
 ```
 
