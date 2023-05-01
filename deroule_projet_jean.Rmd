@@ -14,7 +14,7 @@ editor_options:
 library(tidyverse)
 ```
 
-# I - Avant la modélisation
+# I - Constitution de la base
 
 ## 1 - Importation des fichiers
 
@@ -355,9 +355,58 @@ saveRDS(don_sansNA,"data/don_sansNA.rds")
 # saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
 
-# II - Exporation de la base
+# II - Exploration de la base
 
 Le but de l'exploration de la base est de comprendre sa structure, notamment les liens entre les différentes variables.
+
+```{r}
+library(skimr)
+library(dplyr)
+library(visNetwork)
+library(rpart)
+library(sparkline)
+library(FactoMineR)
+```
+
+```{r}
+data <- readRDS("./data/don_sansNA.rds") %>% 
+  select(-starts_with("match")) %>% 
+  filter(tourney_surface != "Carpet")
+```
+
+## 1 - ACP 
+
+```{r}
+
+#On définit des variables quanti sup (différence de classement) 
+#et des variables quali sup (surface et conditions)
+res.pca <- PCA(dplyr::sample_n(data, 10000)[,-23],quali.sup = c(1,22))
+
+#Pourcentage d'inertie associée à chaque dimension de l'ACP
+barplot(res.pca$eig[,2],names=paste("Dim",1:nrow(res.pca$eig)))
+
+```
+
+
+## 2 - Influence des variables avec l'arbre de regression
+
+```{r}
+data <- readRDS("./data/don_sansNA.rds") %>% 
+  select(-starts_with("match"))
+
+skim(data)
+
+model <- rpart(target ~ ., 
+               data = dplyr::sample_n(data, 10000), 
+               cp = 0.0016,
+               maxcompete = 3, #montre les variables proches de celle choisie
+               maxsurrogate=1)#permet de traiter les valeurs manquantes
+summary(model)
+
+visNetwork::visTree(model, fallenLeaves = TRUE, height = "1000px")
+
+```
+
 
 # III - Comparaison des classifications
 
