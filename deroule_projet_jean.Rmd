@@ -82,7 +82,7 @@ match_stats <- match_stats %>% semi_join(match_scores,by="match_stats_url_suffix
 rm(x)
 ```
 
-### 2-2 Ajout de variables dans la base match_stats :
+### 2-2 Calcul de variables dans la base match_stats :
 
 -   pourcentage de premier service
 
