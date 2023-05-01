@@ -178,12 +178,10 @@ rm(toto,toto2,toto3,toto4)
 ## 2- 5 Ajout d'informations à partir des stats des matches précédents
 
 -   1 - nombre de matches gagnés sur les x matches précédents
--   2 - pourcentage de fautes directes/ensemble des points perdus sur
-    les x matches précédents
--   3 - pourcentage de coups gagnants/pointsgagnés sur les x matches
-    précédents
--   4 - pourcentage de points gagnés au premier service
--   5 - pourcentage de points gagnés au deuxième service
+-   2 - pourcentage d'aces sur les x matches précédents 
+-   3 - pourcentage de double fautes sur les x matches précédents
+-   4 - pourcentage de points gagnés au premier service sur les x matches précédents
+-   5 - pourcentage de points gagnés au deuxième service sur les x matches précédents
 
 ```{r}
 don_winner <- don %>%
@@ -267,7 +265,7 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 -   Informations sur la surface du terrain (4 possibilités : herbe,
     terre battue, dur et moquette)
 
-Dans les tournois récents, il n'y a plus de tournois sur moquette, donc il faut peut-être enlever ces matches des modèles.
+Dans les tournois récents, il n'y a plus de tournois sur moquette, donc il faut enlever ces matches des modèles parce qu'ils ne pourront pas être utilisés dans les matches récents.
 
 ```{r}
 tmp <- don %>% 
@@ -284,7 +282,7 @@ don <- tmp
 ### Etape 1
 
 -   1 - Il faut doubler la base
--   2 - Rajouter une colonne target dans chacune des base (1 et 0)
+-   2 - Rajouter une colonne target dans chacune des bases (1 et 0)
 -   3 - Concaténer les bases
 
 ```{r}
@@ -339,10 +337,13 @@ don <- don %>%
 #2
 don_sansNA <- na.omit(don)
 
-#3
-don_sansNA <- don_sansNA %>%  mutate(target = as.factor(target))
+#3 transfo des variables quali en facteurs
+don_sansNA <- don_sansNA %>%  mutate(target = as.factor(target),
+                                     tourney_surface = as.factor(tourney_surface),
+                                     tourney_conditions = as.factor(tourney_conditions)
+                                     )
 
-#4 on ajoute des variables calculées
+#4 on ajoute la variable du différentiel entre deux classements
 
 # - AJout d'une variable avec la différence de classement entre le joueur 2 et le joueur 1. Une différence négative indique que le joueur 2 est moins bien classé que le joueur 1.
 don_sansNA <- don_sansNA %>% 
@@ -354,7 +355,11 @@ saveRDS(don_sansNA,"data/don_sansNA.rds")
 # saveRDS(don_avecNA,"data/don_avecNA.rds")
 ```
 
-# II - Comparaison des classifications
+# II - Exporation de la base
+
+Le but de l'exploration de la base est de comprendre sa structure, notamment les liens entre les différentes variables.
+
+# III - Comparaison des classifications
 
 ```{r,warning=FALSE}
 #packages utilisés pour faire de la prévision
@@ -378,9 +383,6 @@ Le fichier test est celui des matches les plus récents : 2015 et 2017.
 
 ```{r}
 don <- readRDS("data/don_sansNA.rds")
-
-don <- don %>% mutate(tourney_surface = as.factor(tourney_surface),
-                         tourney_conditions = as.factor(tourney_conditions))
 
 #fichier de test
 don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
