@@ -5,7 +5,6 @@ format: revealjs
 editor: visual
 ---
 
-
 # Problématique
 
 Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les joueurs qui s'affrontent.
@@ -16,15 +15,16 @@ Construire un modèle permettant de prédire le résultat d'un match de tennis e
 library(dplyr)
 ```
 
+## Importation des fichiers source
 
-## Les fichiers sources
-
-When you click the **Render** button a document will be generated that includes:
+Les fichiers ont été récupérés sur le site de [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data).
 
 -   Matches (n = 95 610)
 -   Joueurs (n = 10 912)
 -   Classements (n = 2 694 539)
 -   Tournoi (n = 4 114)
+
+
 
 # Exploration de la base
 
@@ -43,7 +43,6 @@ data <- readRDS("./data/don_sansNA.rds") %>%
 ```{r,echo=TRUE}
 skim(data)
 ```
-
 
 ## ACP
 
