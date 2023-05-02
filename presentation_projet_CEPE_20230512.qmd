@@ -1,0 +1,60 @@
+---
+title: "Projet de Data Science"
+author: "Guillaume Allard, Fally et Jean Sebban"
+format: revealjs
+editor: visual
+---
+
+
+# Problématique
+
+Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les joueurs qui s'affrontent.
+
+# Constitution de la base des matches
+
+```{r}
+library(dplyr)
+```
+
+
+## Les fichiers sources
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Matches (n = 95 610)
+-   Joueurs (n = 10 912)
+-   Classements (n = 2 694 539)
+-   Tournoi (n = 4 114)
+
+# Exploration de la base
+
+```{r}
+library(skimr)
+```
+
+## Univarié
+
+```{r}
+data <- readRDS("./data/don_sansNA.rds") %>% 
+  select(-starts_with("match")) %>% 
+  filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
+```
+
+```{r,echo=TRUE}
+skim(data)
+```
+
+
+## ACP
+
+## Arbre
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+# Comparaison des performances
+
+# Généralisation du modèle

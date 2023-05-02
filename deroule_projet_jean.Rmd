@@ -277,7 +277,7 @@ don <- tmp
 
 ```
 
-## 2-8 Mise en forme avant la modélisation
+## 2-7 Mise en forme avant la modélisation
 
 ### Etape 1
 
@@ -371,7 +371,7 @@ library(FactoMineR)
 ```{r}
 data <- readRDS("./data/don_sansNA.rds") %>% 
   select(-starts_with("match")) %>% 
-  filter(tourney_surface != "Carpet")
+  filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
 ```
 
 ## 1 - ACP 
@@ -382,14 +382,16 @@ data <- readRDS("./data/don_sansNA.rds") %>%
 #et des variables quali sup (surface et conditions)
 
 #modèle avec seulement la surface en quali
-res.pca <- PCA(dplyr::sample_n(data, 1000)[,-c(1,23)],quali.sup = 21,quanti.sup = 22)
+set.seed(1234)
+res.pca <- PCA(dplyr::sample_n(data, 1000)[,-c(22,23)],quali.sup = 1,quanti.sup = 22)
 
 #Pourcentage d'inertie associée à chaque dimension de l'ACP
 barplot(res.pca$eig[,2],names=paste("Dim",1:nrow(res.pca$eig)))
+res.pca$eig %>% round(2)
 
 #représentation des individus sur les axes 1 et 2
-plot(res.pca, choix="ind",select = "cos2 0.6",habillage = 21)
-plot(res.pca, choix="var",habillage=21)
+plot(res.pca, choix="ind",select = "cos2 0.9",habillage = 1,cex=0.5)
+plot(res.pca, choix="var",cex=0.5)
 
 #représentation des individus sur les axes 3 et 4
 plot(res.pca, choix="ind",select = "cos2 0.6",axes=3:4,habillage = 21)
@@ -447,11 +449,11 @@ Le fichier test est celui des matches les plus récents : 2015 et 2017.
 ```{r}
 don <- readRDS("data/don_sansNA.rds")
 
-#fichier de test
+#fichier de test avec les matches de 2015 à 2017
 don_test <- don %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
-#fichier d'entraînement
+#fichier d'entraînement avec les matches de 1991 à 2014
 don_train <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
   select(-match_stats_url_suffix)
 
