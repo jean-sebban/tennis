@@ -559,7 +559,7 @@ saveRDS(RES,"data/RES_training.RDS")
 
 ## 3 - Validation out of bag
 
-Le fichier d'entraînement créé plus haut est divisé en un fichier d'entraînement et un fichier de validation.
+Le fichier d'entraînement créé plus haut est divisé en un fichier d'apprentissage et un fichier de validation.
 
 ```{r}
 #fichier de validation
@@ -576,6 +576,7 @@ don_train_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("20
 XXA <- model.matrix(target~.,data=don_train_app)   #version matrice
 YYA <- don_train_app$target
 
+#fichier de validation pour glmnet
 XXT <- model.matrix(target~.,data=don_train_valid)
 
 #Fichier d'apprentissage pour gradient boosting

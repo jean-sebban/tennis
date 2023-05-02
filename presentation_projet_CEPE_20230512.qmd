@@ -1,6 +1,6 @@
 ---
 title: "Projet de Data Science"
-author: "Guillaume Allard, Fally et Jean Sebban"
+author: "Jean Sebban, Fally et Guillaume Allard"
 format: revealjs
 editor: visual
 ---
@@ -11,20 +11,14 @@ Construire un modèle permettant de prédire le résultat d'un match de tennis e
 
 # Constitution de la base des matches
 
-```{r}
-library(dplyr)
-```
+## Les fichiers sources
 
-## Importation des fichiers source
-
-Les fichiers ont été récupérés sur le site de [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data).
+Les fichiers source ont été récupérés sur datahub :
 
 -   Matches (n = 95 610)
 -   Joueurs (n = 10 912)
 -   Classements (n = 2 694 539)
 -   Tournoi (n = 4 114)
-
-
 
 # Exploration de la base
 
@@ -40,8 +34,8 @@ data <- readRDS("./data/don_sansNA.rds") %>%
   filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
 ```
 
-```{r,echo=TRUE}
-skim(data)
+```{r}
+str(data)
 ```
 
 ## ACP
