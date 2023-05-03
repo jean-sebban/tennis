@@ -7,15 +7,18 @@ editor: visual
 
 # Problématique
 
-Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les joueurs qui s'affrontent.
+1.  Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les joueurs qui s'affrontent et sur le tournoi.
+
+2.  Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.
 
 # Constitution de la base des matches
 
-## Les fichiers sources
+## Importation des fichiers
 
-Les fichiers source ont été récupérés sur datahub :
+Les fichiers source ont été récupérés sur le site [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data) :
 
--   Matches (n = 95 610)
+-   Matchs stats
+-   Matchs scores
 -   Joueurs (n = 10 912)
 -   Classements (n = 2 694 539)
 -   Tournoi (n = 4 114)
@@ -24,6 +27,7 @@ Les fichiers source ont été récupérés sur datahub :
 
 ```{r}
 library(skimr)
+library(dplyr)
 ```
 
 ## Univarié
@@ -35,19 +39,30 @@ data <- readRDS("./data/don_sansNA.rds") %>%
 ```
 
 ```{r}
-str(data)
+skim(data)
 ```
 
 ## ACP
 
-## Arbre
+```{r}
+library(FactoMineR)
 
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+set.seed(1234)
+res.pca <- PCA(sample_n(data, 1000)[,-c(22,23)],quali.sup = 1,quanti.sup = 22)
+```
+
+## Valeurs propres
+
+```{r}
+barplot(res.pca$eig[,2],names=paste("Dim",1:nrow(res.pca$eig)))
+```
+
+## Arbre
 
 ```{r}
 1 + 1
 ```
 
-# Comparaison des performances
+# Comparaison des modèles
 
 # Généralisation du modèle

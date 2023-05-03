@@ -9,7 +9,7 @@
 <link href="presentation_projet_CEPE_20230512_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.2.335">
 
-  <meta name="author" content="Guillaume Allard, Fally et Jean Sebban">
+  <meta name="author" content="Jean Sebban, Fally et Guillaume Allard">
   <title>Projet de Data Science</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -28,70 +28,6 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-    pre > code.sourceCode > span:empty { height: 1.2em; }
-    .sourceCode { overflow: visible; }
-    code.sourceCode > span { color: inherit; text-decoration: inherit; }
-    div.sourceCode { margin: 1em 0; }
-    pre.sourceCode { margin: 0; }
-    @media screen {
-    div.sourceCode { overflow: auto; }
-    }
-    @media print {
-    pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-    }
-    pre.numberSource code
-      { counter-reset: source-line 0; }
-    pre.numberSource code > span
-      { position: relative; left: -4em; counter-increment: source-line; }
-    pre.numberSource code > span > a:first-child::before
-      { content: counter(source-line);
-        position: relative; left: -1em; text-align: right; vertical-align: baseline;
-        border: none; display: inline-block;
-        -webkit-touch-callout: none; -webkit-user-select: none;
-        -khtml-user-select: none; -moz-user-select: none;
-        -ms-user-select: none; user-select: none;
-        padding: 0 4px; width: 4em;
-        color: #aaaaaa;
-      }
-    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-    div.sourceCode
-      { color: #003b4f; background-color: #f1f3f5; }
-    @media screen {
-    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-    }
-    code span { color: #003b4f; } /* Normal */
-    code span.al { color: #ad0000; } /* Alert */
-    code span.an { color: #5e5e5e; } /* Annotation */
-    code span.at { color: #657422; } /* Attribute */
-    code span.bn { color: #ad0000; } /* BaseN */
-    code span.bu { } /* BuiltIn */
-    code span.cf { color: #003b4f; } /* ControlFlow */
-    code span.ch { color: #20794d; } /* Char */
-    code span.cn { color: #8f5902; } /* Constant */
-    code span.co { color: #5e5e5e; } /* Comment */
-    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
-    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
-    code span.dt { color: #ad0000; } /* DataType */
-    code span.dv { color: #ad0000; } /* DecVal */
-    code span.er { color: #ad0000; } /* Error */
-    code span.ex { } /* Extension */
-    code span.fl { color: #ad0000; } /* Float */
-    code span.fu { color: #4758ab; } /* Function */
-    code span.im { color: #00769e; } /* Import */
-    code span.in { color: #5e5e5e; } /* Information */
-    code span.kw { color: #003b4f; } /* Keyword */
-    code span.op { color: #5e5e5e; } /* Operator */
-    code span.ot { color: #003b4f; } /* Other */
-    code span.pp { color: #ad0000; } /* Preprocessor */
-    code span.sc { color: #5e5e5e; } /* SpecialChar */
-    code span.ss { color: #20794d; } /* SpecialString */
-    code span.st { color: #20794d; } /* String */
-    code span.va { color: #111111; } /* Variable */
-    code span.vs { color: #20794d; } /* VerbatimString */
-    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </style>
   <link rel="stylesheet" href="presentation_projet_CEPE_20230512_files/libs/revealjs/dist/theme/quarto.css" id="theme">
   <link href="presentation_projet_CEPE_20230512_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
@@ -393,7 +329,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Guillaume Allard, Fally et Jean Sebban 
+Jean Sebban, Fally et Guillaume Allard 
 </div>
 </div>
 </div>
@@ -401,21 +337,23 @@ Guillaume Allard, Fally et Jean Sebban
 </section>
 <section id="problématique" class="title-slide slide level1 center">
 <h1>Problématique</h1>
-<p>Construire un modèle permettant de prédire le résultat d’un match de tennis en simple, à partir d’informations sur les joueurs qui s’affrontent.</p>
+<ol type="1">
+<li><p>Construire un modèle permettant de prédire le résultat d’un match de tennis en simple, à partir d’informations sur les joueurs qui s’affrontent et sur le tournoi.</p></li>
+<li><p>Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.</p></li>
+</ol>
 </section>
 
 <section>
 <section id="constitution-de-la-base-des-matches" class="title-slide slide level1 center">
 <h1>Constitution de la base des matches</h1>
-<div class="cell">
 
-</div>
 </section>
-<section id="les-fichiers-sources" class="slide level2">
-<h2>Les fichiers sources</h2>
-<p>Les fichiers ont été récupérés sur le site de <a href="https://datahub.io/sports-data/atp-world-tour-tennis-data">datahub</a>.</p>
+<section id="importation-des-fichiers" class="slide level2">
+<h2>Importation des fichiers</h2>
+<p>Les fichiers source ont été récupérés sur le site <a href="https://datahub.io/sports-data/atp-world-tour-tennis-data">datahub</a> :</p>
 <ul>
-<li>Matches (n = 95 610)</li>
+<li>Matchs stats</li>
+<li>Matchs scores</li>
 <li>Joueurs (n = 10 912)</li>
 <li>Classements (n = 2 694 539)</li>
 <li>Tournoi (n = 4 114)</li>
@@ -434,7 +372,6 @@ Guillaume Allard, Fally et Jean Sebban
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">skim</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table>
 <caption>Data summary</caption>
@@ -835,18 +772,29 @@ Guillaume Allard, Fally et Jean Sebban
 </section>
 <section id="acp" class="slide level2">
 <h2>ACP</h2>
+<div class="cell">
+<div class="cell-output-display">
+<p><img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-8-1.png" width="960"></p>
+</div>
+<div class="cell-output-display">
+<p><img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-8-2.png" width="960"></p>
+</div>
+</div>
 </section>
+<section id="valeurs-propres" class="slide level2">
+<h2>Valeurs propres</h2>
+
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-10-1.png" width="960" class="r-stretch"></section>
 <section id="arbre" class="slide level2">
 <h2>Arbre</h2>
-<p>When you click the <strong>Render</strong> button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 2</code></pre>
 </div>
 </div>
 </section></section>
-<section id="comparaison-des-performances" class="title-slide slide level1 center">
-<h1>Comparaison des performances</h1>
+<section id="comparaison-des-modèles" class="title-slide slide level1 center">
+<h1>Comparaison des modèles</h1>
 
 </section>
 
