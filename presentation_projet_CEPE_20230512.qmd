@@ -204,7 +204,7 @@ algo4 <- rpart(target~.,data=don_train_app,cp=0.0001,minsplit=5)
 printcp(algo4)
 ```
 
-## Arbre : représentation
+## Algo4 Arbre : représentation
 
 ```{r}
 algo4 <- rpart(target~.,data=don_train_app,cp=0.00026335,minsplit=5)
@@ -212,7 +212,7 @@ algo4 <- rpart(target~.,data=don_train_app,cp=0.00026335,minsplit=5)
 visTree(algo4)
 ```
 
-## Forêt aléatoire
+## Algo 5 : Forêt aléatoire
 
 ```{r}
 library(randomForest)
@@ -231,19 +231,19 @@ XXA <- model.matrix(target~.,data=don_train_app)   #version matrice
 YYA <- don_train_app$target
 ```
 
-## Regression ridge
+## Algo 6 : Regression ridge
 
 ```{r,echo=TRUE}
 algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
 ```
 
-## Regression lasso
+## Algo 7 : Regression lasso
 
 ```{r,echo=TRUE}
  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
 ```
 
-## Regression elastic-net
+## Algo 8 : Regression elastic-net
 
 ```{r,echo=TRUE}
 algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
