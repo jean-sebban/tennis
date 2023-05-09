@@ -152,7 +152,7 @@ select(-match_stats_url_suffix)
 
 ## Validation hold out
 
-On utilise ici une validation hold out (apprentissage validation), pour tenir compte du caractère temporel des données.
+On utilise ici une validation hold-out (apprentissage validation), pour tenir compte du caractère temporel des données.
 
 ```{r, echo=TRUE}
 #fichier d'apprentissage contenant tous les matches de 1991 à 2012 
@@ -166,6 +166,13 @@ don_train_valid <- don  %>%
   select(-match_stats_url_suffix)
 
 
+```
+
+## Algo 1 : regression logistique complète
+
+```{r, echo=TRUE}
+ algo1 <- glm(target~.,data=don_train_app,family="binomial")
+ summary(algo1)
 ```
 
 # Généralisation du modèle

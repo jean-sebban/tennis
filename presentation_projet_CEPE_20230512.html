@@ -8720,9 +8720,97 @@ $call$X
 </section>
 <section id="validation-hold-out" class="slide level2">
 <h2>Validation hold out</h2>
-<p>On utilise ici une validation hold out (apprentissage validation), pour tenir compte du caractère temporel des données.</p>
+<p>On utilise ici une validation hold-out (apprentissage validation), pour tenir compte du caractère temporel des données.</p>
 <div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">#fichier d'apprentissage contenant tous les matches de 1991 à 2012 </span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>don_train_app <span class="ot">&lt;-</span> don <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">substr</span>(match_stats_url_suffix,<span class="dv">12</span>,<span class="dv">15</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2013"</span>,<span class="st">"2014"</span>,<span class="st">"2015"</span>,<span class="st">"2016"</span>,<span class="st">"2017"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-4"><a href="#cb8-4"></a>  <span class="fu">select</span>(<span class="sc">-</span>match_stats_url_suffix)</span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co">#fichier de validation sur les matches de 2013 et 2014</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>don_train_valid <span class="ot">&lt;-</span> don  <span class="sc">%&gt;%</span> </span>
+<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">filter</span>(<span class="fu">substr</span>(match_stats_url_suffix,<span class="dv">12</span>,<span class="dv">15</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2013"</span>,<span class="st">"2014"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-9"><a href="#cb8-9"></a>  <span class="fu">select</span>(<span class="sc">-</span>match_stats_url_suffix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="algo-1-regression-logistique-complète" class="slide level2">
+<h2>Algo 1 : regression logistique complète</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a> algo1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a> <span class="fu">summary</span>(algo1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = target ~ ., family = "binomial", data = don_train_app)
 
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-4.200  -1.087   0.000   1.087   4.200  
+
+Coefficients: (1 not defined because of singularities)
+                                        Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)                           -2.911e-13  3.326e-01   0.000 1.000000
+weight_j1                              7.331e-03  1.401e-03   5.232 1.68e-07
+height_j1                             -5.663e-03  1.492e-03  -3.795 0.000148
+age_j1                                -2.143e-02  1.856e-03 -11.545  &lt; 2e-16
+classement_j1                         -5.777e-03  1.019e-04 -56.689  &lt; 2e-16
+nb_match_won_last_5_j1                 1.181e-01  7.261e-03  16.262  &lt; 2e-16
+avg_pct_ace_last_5_j1                  1.742e-02  2.039e-03   8.543  &lt; 2e-16
+avg_pct_double_faults_last_5_j1       -1.995e-02  3.861e-03  -5.168 2.37e-07
+avg_pct_first_serves_in_5_j1          -3.571e-03  1.096e-03  -3.256 0.001128
+avg_pct_first_serves_points_won_5_j1   1.845e-02  1.980e-03   9.317  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j1  1.308e-02  1.338e-03   9.777  &lt; 2e-16
+weight_j2                             -7.331e-03  1.401e-03  -5.232 1.68e-07
+height_j2                              5.663e-03  1.492e-03   3.795 0.000148
+age_j2                                 2.143e-02  1.856e-03  11.545  &lt; 2e-16
+classement_j2                          5.777e-03  1.019e-04  56.689  &lt; 2e-16
+nb_match_won_last_5_j2                -1.181e-01  7.261e-03 -16.262  &lt; 2e-16
+avg_pct_ace_last_5_j2                 -1.742e-02  2.039e-03  -8.543  &lt; 2e-16
+avg_pct_double_faults_last_5_j2        1.995e-02  3.861e-03   5.168 2.37e-07
+avg_pct_first_serves_in_5_j2           3.571e-03  1.096e-03   3.256 0.001128
+avg_pct_first_serves_points_won_5_j2  -1.845e-02  1.980e-03  -9.317  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j2 -1.308e-02  1.338e-03  -9.777  &lt; 2e-16
+tourney_surfaceGrass                  -5.077e-16  2.220e-02   0.000 1.000000
+tourney_surfaceHard                    5.735e-16  1.522e-02   0.000 1.000000
+tourney_conditionsOutdoor             -4.867e-16  1.923e-02   0.000 1.000000
+classement_diff                               NA         NA      NA       NA
+                                         
+(Intercept)                              
+weight_j1                             ***
+height_j1                             ***
+age_j1                                ***
+classement_j1                         ***
+nb_match_won_last_5_j1                ***
+avg_pct_ace_last_5_j1                 ***
+avg_pct_double_faults_last_5_j1       ***
+avg_pct_first_serves_in_5_j1          ** 
+avg_pct_first_serves_points_won_5_j1  ***
+avg_pct_second_serves_points_won_5_j1 ***
+weight_j2                             ***
+height_j2                             ***
+age_j2                                ***
+classement_j2                         ***
+nb_match_won_last_5_j2                ***
+avg_pct_ace_last_5_j2                 ***
+avg_pct_double_faults_last_5_j2       ***
+avg_pct_first_serves_in_5_j2          ** 
+avg_pct_first_serves_points_won_5_j2  ***
+avg_pct_second_serves_points_won_5_j2 ***
+tourney_surfaceGrass                     
+tourney_surfaceHard                      
+tourney_conditionsOutdoor                
+classement_diff                          
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 163186  on 117713  degrees of freedom
+Residual deviance: 150399  on 117690  degrees of freedom
+AIC: 150447
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
 </div>
 </section></section>
 <section id="généralisation-du-modèle" class="title-slide slide level1 center">
