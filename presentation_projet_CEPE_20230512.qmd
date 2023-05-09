@@ -118,8 +118,6 @@ dimdesc(res.pca)
 # Comparaison des modèles
 
 ```{r}
-library(rpart)
-library(randomForest)
 library(glmnet)
 library(gbm)
 library(doParallel) #pour faire du multi coeur
@@ -168,6 +166,8 @@ don_train_valid <- don  %>%
 
 ```
 
+# Regression logistique
+
 ## Algo 1 : regression logistique complète
 
 ```{r, echo=TRUE}
@@ -188,5 +188,40 @@ summary(algo2)
  algo3 <- step(algo1,trace=0,k=log(nrow(don_train_app)))
  summary(algo3)
 ```
+
+# Arbres et forêt aléatoire
+
+## Algo 4 : arbre, choix de la profondeur
+
+```{r}
+library(rpart)
+library(rpart.plot)
+library(visNetwork)
+```
+
+```{r, echo=TRUE}
+algo4 <- rpart(target~.,data=don_train_app,cp=0.0001,minsplit=5)
+printcp(algo4)
+```
+
+## Arbre : représentation
+
+```{r}
+algo4 <- rpart(target~.,data=don_train_app,cp=0.00026335,minsplit=5)
+# rpart.plot(algo4,main="représentation de l'arbre")
+visTree(algo4)
+```
+
+## Forêt aléatoire
+
+```{r}
+library(randomForest)
+algo5 <- randomForest(target~.,data=don_train_app)
+algo5
+```
+
+# Regression sous contrainte
+
+# Gradient-boosting
 
 # Généralisation du modèle
