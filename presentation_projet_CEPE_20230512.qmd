@@ -17,14 +17,14 @@ editor: visual
 
 Les fichiers source ont été récupérés sur le site [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data) :
 
--   Matches : stats et scores de 1991 à 2017 (n = 95 610)
--   Joueurs (n = 10 912)
--   Classements (n = 2 694 539)
--   Tournois (n = 4 114)
+-   **Matches :** stats et scores de 1991 à 2017 (n = 95 610)
+-   **Joueurs :** (n = 10 912)
+-   **Classements** (n = 2 694 539)
+-   **Tournois** (n = 4 114)
 
 ## Calcul des stats sur les précédents matches
 
-Les stats suivantes sont calculées sur les 5 précédents matches, pour chaque joueur (winner et loser) :
+Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et loser) :
 
 -   Nombre de matches gagnés
 
@@ -40,25 +40,27 @@ Les stats suivantes sont calculées sur les 5 précédents matches, pour chaque 
 
 ## Enrichissement de la base des matches
 
--   A partir de la base des joueurs :
+-   A partir de la base des **joueurs** (taille, poids et âge)
 
-    -   taille
-
-    -   poids
-
-    -   âge
-
--   A partir de la base des tournois :
+-   A partir de la base des **tournois** :
 
     -   surface (terre battue, gazon, dur, moquette)
 
     -   conditions (intérieur ou extérieur)
 
--   A partir de la base des classements :
+-   A partir de la base des **classements** (classements au moment du match + diff de classement)
 
-    -   classement des joueurs au moment du match
+Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2 joueurs)
 
-    -   calcul de la différence de classement entre les deux joueurs
+## Preprocessing avant modélisation
+
+-   Ajout de la variable target (**Y = 1**)
+
+-   Duplication de la base : **n = 191 220 matches**
+
+-   Traitement des valeurs manquantes (**n = 158 870**)
+
+-   Nettoyage final (mise en factor, traitement anomalies) : **n = 149 852**
 
 # Exploration de la base
 

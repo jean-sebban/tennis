@@ -349,6 +349,15 @@ don_sansNA <- don_sansNA %>%  mutate(target = as.factor(target),
 don_sansNA <- don_sansNA %>% 
   mutate(classement_diff = classement_j2 - classement_j1)
 
+# On enlève les informations sur le poids et la taille
+don_sansNA <- don_sansNA %>% 
+  filter(weight_j1 != 0 & weight_j2 != 0 ) %>% 
+  filter(height_j1 != 0 & height_j2 != 0 )
+
+# on enlève les matches sur moquette
+don_sansNA <- don_sansNA %>% 
+  filter(tourney_surface != "Carpet")
+
 #5
 # saveRDS(don_clustering,"data/don_clustering.rds")
 saveRDS(don_sansNA,"data/don_sansNA.rds")
