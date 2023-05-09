@@ -17,11 +17,10 @@ editor: visual
 
 Les fichiers source ont été récupérés sur le site [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data) :
 
--   Matchs stats
--   Matchs scores
+-   Matches (n = 95 610)
 -   Joueurs (n = 10 912)
 -   Classements (n = 2 694 539)
--   Tournoi (n = 4 114)
+-   Tournois (n = 4 114)
 
 # Exploration de la base
 
@@ -30,38 +29,44 @@ library(skimr)
 library(dplyr)
 ```
 
-## Univarié
+## Statistiques descriptives univariées
 
 ```{r}
-data <- readRDS("./data/don_sansNA.rds") %>% 
+don <- readRDS("./data/don_sansNA.rds") %>% 
   select(-starts_with("match")) %>% 
   filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
 ```
 
 ```{r,echo=TRUE}
 
-summary(data)
+summary(don)
 ```
 
-## ACP
+## ACP : inertie expliquée par les axes
 
 ```{r}
 library(FactoMineR)
-
 set.seed(1234)
-res.pca <- PCA(sample_n(data, 1000)[,-c(22,23)],quali.sup = 1,quanti.sup = 22)
+res.pca <- PCA(sample_n(don, 1000)[,-c(22,23)],
+               quali.sup = 1,
+               quanti.sup = 22,
+               graph = FALSE)
 ```
 
-## Valeurs propres
-
-```{r}
-barplot(res.pca$eig[,2],names=paste("Dim",1:nrow(res.pca$eig)))
+```{r,echo=TRUE}
+barplot(res.pca$eig[,2],names.arg = paste("",1:nrow(res.pca$eig)))
 ```
 
-## Arbre
+## ACP : graphe des variables
 
-```{r}
-1 + 1
+```{r,echo=TRUE}
+plot(res.pca,choix = "var")
+```
+
+## ACP : description des axes
+
+```{r,echo=TRUE}
+dimdesc(res.pca)
 ```
 
 # Comparaison des modèles
