@@ -566,20 +566,20 @@ for(ii in 1:nb){
 saveRDS(RES,"data/RES_training.RDS")
 ```
 
-## 3 - Validation out of bag
+## 3 - Validation hold out
 
 Le fichier d'entraînement créé plus haut est divisé en un fichier d'apprentissage et un fichier de validation.
 
 ```{r}
-#fichier de validation
-don_train_valid <- don  %>% filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
+#fichier de validation sur les matches de 2013 et 2014
+don_train_valid <- don  %>% 
+  filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
   select(-match_stats_url_suffix)
 
 #fichier d'apprentissage contenant tous les matches de 1991 à 2012 
-#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
-don_train_app <- don %>% filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
-  select(-match_stats_url_suffix) %>% 
-  filter(tourney_surface != "carpet")
+don_train_app <- don %>% 
+  filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
+  select(-match_stats_url_suffix)
 
 #Construction d'une version matrice pour glmnet : apprentissage
 XXA <- model.matrix(target~.,data=don_train_app)   #version matrice

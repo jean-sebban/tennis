@@ -425,36 +425,42 @@ Jean Sebban, Fally et Guillaume Allard
 <section id="calcul-des-stats-sur-les-précédents-matches" class="slide level2">
 <h2>Calcul des stats sur les précédents matches</h2>
 <p>Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et loser) :</p>
+<div>
 <ul>
-<li><p>Nombre de matches gagnés</p></li>
-<li><p>Pourcentage d’aces</p></li>
-<li><p>Pourcentage de double fautes</p></li>
-<li><p>Pourcentage de premier service</p></li>
-<li><p>Pourcentage de points gagnés au premier service</p></li>
-<li><p>Pourcentage de points gagnés au deuxième service</p></li>
+<li class="fragment"><p>Nombre de matches gagnés</p></li>
+<li class="fragment"><p>Pourcentage d’aces</p></li>
+<li class="fragment"><p>Pourcentage de double fautes</p></li>
+<li class="fragment"><p>Pourcentage de premier service</p></li>
+<li class="fragment"><p>Pourcentage de points gagnés au premier service</p></li>
+<li class="fragment"><p>Pourcentage de points gagnés au deuxième service</p></li>
 </ul>
+</div>
 </section>
 <section id="enrichissement-de-la-base-des-matches" class="slide level2">
 <h2>Enrichissement de la base des matches</h2>
+<div>
 <ul>
-<li><p>A partir de la base des <strong>joueurs</strong> (taille, poids et âge)</p></li>
-<li><p>A partir de la base des <strong>tournois</strong> :</p>
+<li class="fragment"><p>A partir de la base des <strong>joueurs</strong> (taille, poids et âge)</p></li>
+<li class="fragment"><p>A partir de la base des <strong>tournois</strong> :</p>
 <ul>
-<li><p>surface (terre battue, gazon, dur, moquette)</p></li>
-<li><p>conditions (intérieur ou extérieur)</p></li>
+<li class="fragment"><p>surface (terre battue, gazon, dur, moquette)</p></li>
+<li class="fragment"><p>conditions (intérieur ou extérieur)</p></li>
 </ul></li>
-<li><p>A partir de la base des <strong>classements</strong> (classements au moment du match + diff de classement)</p></li>
+<li class="fragment"><p>A partir de la base des <strong>classements</strong> (classements au moment du match + diff de classement)</p></li>
 </ul>
+</div>
 <p>Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2 joueurs)</p>
 </section>
 <section id="preprocessing-avant-modélisation" class="slide level2">
 <h2>Preprocessing avant modélisation</h2>
+<div>
 <ul>
-<li><p>Ajout de la variable target (<strong>Y = 1</strong>)</p></li>
-<li><p>Duplication de la base : <strong>n = 191 220 matches</strong></p></li>
-<li><p>Traitement des valeurs manquantes (<strong>n = 158 870</strong>)</p></li>
-<li><p>Nettoyage final (mise en factor, traitement anomalies) : <strong>n = 149 852</strong></p></li>
+<li class="fragment"><p>Ajout de la variable target (<strong>Y = 1</strong>)</p></li>
+<li class="fragment"><p>Duplication de la base : <strong>n = 191 220 matches</strong></p></li>
+<li class="fragment"><p>Traitement des valeurs manquantes (<strong>n = 158 870</strong>)</p></li>
+<li class="fragment"><p>Nettoyage final (mise en factor, traitement anomalies) : <strong>n = 149 852</strong></p></li>
 </ul>
+</div>
 </section></section>
 <section>
 <section id="exploration-de-la-base" class="title-slide slide level1 center">
@@ -8684,11 +8690,41 @@ $call$X
 </div>
 </div>
 </section></section>
+<section>
 <section id="comparaison-des-modèles" class="title-slide slide level1 center">
 <h1>Comparaison des modèles</h1>
+<div class="cell">
 
+</div>
+<div class="cell">
+
+</div>
 </section>
+<section id="séparation-en-fichier-entraînementtest" class="slide level2">
+<h2>Séparation en fichier entraînement/test</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">#fichier d'entraînement avec les matches de 1991 à 2014</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>don_train <span class="ot">&lt;-</span> don <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="fu">filter</span>(<span class="sc">!</span><span class="fu">substr</span>(match_stats_url_suffix,<span class="dv">12</span>,<span class="dv">15</span>) <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"2015"</span>,<span class="st">"2016"</span>,<span class="st">"2017"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="fu">select</span>(<span class="sc">-</span>match_stats_url_suffix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li>Le fichier d’entraînement (n = 130562) va permettre de sélectionner le modèle le plus performant avant de généraliser.</li>
+</ul>
+<div class="cell">
 
+</div>
+<ul>
+<li>Le fichier de test (n = 19290) sera utilisé pour généraliser le modèle.</li>
+</ul>
+</section>
+<section id="validation-hold-out" class="slide level2">
+<h2>Validation hold out</h2>
+<p>On utilise ici une validation hold out (apprentissage validation), pour tenir compte du caractère temporel des données.</p>
+<div class="cell">
+
+</div>
+</section></section>
 <section id="généralisation-du-modèle" class="title-slide slide level1 center">
 <h1>Généralisation du modèle</h1>
 <div class="footer footer-default">

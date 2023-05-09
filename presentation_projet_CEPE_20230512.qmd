@@ -26,6 +26,7 @@ Les fichiers source ont été récupérés sur le site [datahub](https://datahub
 
 Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et loser) :
 
+::: incremental
 -   Nombre de matches gagnés
 
 -   Pourcentage d'aces
@@ -37,9 +38,11 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
 -   Pourcentage de points gagnés au premier service
 
 -   Pourcentage de points gagnés au deuxième service
+:::
 
 ## Enrichissement de la base des matches
 
+::: incremental
 -   A partir de la base des **joueurs** (taille, poids et âge)
 
 -   A partir de la base des **tournois** :
@@ -49,11 +52,13 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
     -   conditions (intérieur ou extérieur)
 
 -   A partir de la base des **classements** (classements au moment du match + diff de classement)
+:::
 
 Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2 joueurs)
 
 ## Preprocessing avant modélisation
 
+::: incremental
 -   Ajout de la variable target (**Y = 1**)
 
 -   Duplication de la base : **n = 191 220 matches**
@@ -61,6 +66,7 @@ Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2
 -   Traitement des valeurs manquantes (**n = 158 870**)
 
 -   Nettoyage final (mise en factor, traitement anomalies) : **n = 149 852**
+:::
 
 # Exploration de la base
 
@@ -110,5 +116,56 @@ dimdesc(res.pca)
 ```
 
 # Comparaison des modèles
+
+```{r}
+library(rpart)
+library(randomForest)
+library(glmnet)
+library(gbm)
+library(doParallel) #pour faire du multi coeur
+```
+
+```{r}
+don <- readRDS("data/don_sansNA.rds")
+```
+
+## Séparation en fichier entraînement/test
+
+```{r, echo = TRUE}
+
+#fichier d'entraînement avec les matches de 1991 à 2014
+don_train <- don %>% 
+filter(!substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
+select(-match_stats_url_suffix)
+```
+
+-   Le fichier d'entraînement (n = `r nrow(don_train)`) va permettre de sélectionner le modèle le plus performant avant de généraliser.
+
+```{r}
+#fichier de test avec les matches de 2015 à 2017
+don_test <- don %>% 
+filter(substr(match_stats_url_suffix,12,15) %in% c("2015","2016","2017")) %>% 
+select(-match_stats_url_suffix)
+```
+
+-   Le fichier de test (n = `r nrow(don_test)`) sera utilisé pour généraliser le modèle.
+
+## Validation hold out
+
+On utilise ici une validation hold out (apprentissage validation), pour tenir compte du caractère temporel des données.
+
+```{r, echo=TRUE}
+#fichier d'apprentissage contenant tous les matches de 1991 à 2012 
+don_train_app <- don %>% 
+  filter(!substr(match_stats_url_suffix,12,15) %in% c("2013","2014","2015","2016","2017")) %>% 
+  select(-match_stats_url_suffix)
+
+#fichier de validation sur les matches de 2013 et 2014
+don_train_valid <- don  %>% 
+  filter(substr(match_stats_url_suffix,12,15) %in% c("2013","2014")) %>% 
+  select(-match_stats_url_suffix)
+
+
+```
 
 # Généralisation du modèle
