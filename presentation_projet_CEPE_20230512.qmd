@@ -225,6 +225,12 @@ algo5
 
 # Regression sous contrainte
 
+```{r}
+#Construction d'une version matrice pour glmnet : apprentissage
+XXA <- model.matrix(target~.,data=don_train_app)   #version matrice
+YYA <- don_train_app$target
+```
+
 ## Regression ridge
 
 ```{r,echo=TRUE}

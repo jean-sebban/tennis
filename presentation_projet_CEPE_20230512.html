@@ -9065,6 +9065,11 @@ n= 117714
 <section id="forêt-aléatoire" class="slide level2">
 <h2>Forêt aléatoire</h2>
 <div class="cell">
+
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>algo5 <span class="ot">&lt;-</span> <span class="fu">randomForest</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>algo5</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -9081,11 +9086,31 @@ Confusion matrix:
 </div>
 </div>
 </section></section>
+<section>
 <section id="regression-sous-contrainte" class="title-slide slide level1 center">
 <h1>Regression sous contrainte</h1>
+<div class="cell">
 
+</div>
 </section>
-
+<section id="regression-ridge" class="slide level2">
+<h2>Regression ridge</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>algo6 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="dv">0</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="regression-lasso" class="slide level2">
+<h2>Regression lasso</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a> algo7 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="dv">1</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="regression-elastic-net" class="slide level2">
+<h2>Regression elastic-net</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>algo8 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="fl">0.5</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section>
 <section id="gradient-boosting" class="title-slide slide level1 center">
 <h1>Gradient-boosting</h1>
 
