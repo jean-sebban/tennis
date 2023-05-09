@@ -8812,6 +8812,159 @@ AIC: 150447
 Number of Fisher Scoring iterations: 4</code></pre>
 </div>
 </div>
+</section>
+<section id="algo-2-logistique-aic" class="slide level2">
+<h2>Algo 2 : logistique AIC</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>algo2 <span class="ot">&lt;-</span> <span class="fu">step</span>(algo1,<span class="at">trace=</span><span class="dv">0</span>)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="fu">summary</span>(algo2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = target ~ weight_j1 + height_j1 + age_j1 + classement_j1 + 
+    nb_match_won_last_5_j1 + avg_pct_ace_last_5_j1 + avg_pct_double_faults_last_5_j1 + 
+    avg_pct_first_serves_in_5_j1 + avg_pct_first_serves_points_won_5_j1 + 
+    avg_pct_second_serves_points_won_5_j1 + weight_j2 + height_j2 + 
+    age_j2 + classement_j2 + nb_match_won_last_5_j2 + avg_pct_ace_last_5_j2 + 
+    avg_pct_double_faults_last_5_j2 + avg_pct_first_serves_in_5_j2 + 
+    avg_pct_first_serves_points_won_5_j2 + avg_pct_second_serves_points_won_5_j2, 
+    family = "binomial", data = don_train_app)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-4.200  -1.087   0.000   1.087   4.200  
+
+Coefficients:
+                                        Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)                           -2.793e-13  3.314e-01   0.000 1.000000
+weight_j1                              7.331e-03  1.401e-03   5.232 1.68e-07
+height_j1                             -5.663e-03  1.491e-03  -3.799 0.000145
+age_j1                                -2.143e-02  1.855e-03 -11.551  &lt; 2e-16
+classement_j1                         -5.777e-03  1.018e-04 -56.728  &lt; 2e-16
+nb_match_won_last_5_j1                 1.181e-01  7.249e-03  16.288  &lt; 2e-16
+avg_pct_ace_last_5_j1                  1.742e-02  2.002e-03   8.703  &lt; 2e-16
+avg_pct_double_faults_last_5_j1       -1.995e-02  3.845e-03  -5.189 2.12e-07
+avg_pct_first_serves_in_5_j1          -3.571e-03  1.095e-03  -3.260 0.001116
+avg_pct_first_serves_points_won_5_j1   1.845e-02  1.977e-03   9.332  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j1  1.308e-02  1.336e-03   9.795  &lt; 2e-16
+weight_j2                             -7.331e-03  1.401e-03  -5.232 1.68e-07
+height_j2                              5.663e-03  1.491e-03   3.799 0.000145
+age_j2                                 2.143e-02  1.855e-03  11.551  &lt; 2e-16
+classement_j2                          5.777e-03  1.018e-04  56.728  &lt; 2e-16
+nb_match_won_last_5_j2                -1.181e-01  7.249e-03 -16.288  &lt; 2e-16
+avg_pct_ace_last_5_j2                 -1.742e-02  2.002e-03  -8.703  &lt; 2e-16
+avg_pct_double_faults_last_5_j2        1.995e-02  3.845e-03   5.189 2.12e-07
+avg_pct_first_serves_in_5_j2           3.571e-03  1.095e-03   3.260 0.001116
+avg_pct_first_serves_points_won_5_j2  -1.845e-02  1.977e-03  -9.332  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j2 -1.308e-02  1.336e-03  -9.795  &lt; 2e-16
+                                         
+(Intercept)                              
+weight_j1                             ***
+height_j1                             ***
+age_j1                                ***
+classement_j1                         ***
+nb_match_won_last_5_j1                ***
+avg_pct_ace_last_5_j1                 ***
+avg_pct_double_faults_last_5_j1       ***
+avg_pct_first_serves_in_5_j1          ** 
+avg_pct_first_serves_points_won_5_j1  ***
+avg_pct_second_serves_points_won_5_j1 ***
+weight_j2                             ***
+height_j2                             ***
+age_j2                                ***
+classement_j2                         ***
+nb_match_won_last_5_j2                ***
+avg_pct_ace_last_5_j2                 ***
+avg_pct_double_faults_last_5_j2       ***
+avg_pct_first_serves_in_5_j2          ** 
+avg_pct_first_serves_points_won_5_j2  ***
+avg_pct_second_serves_points_won_5_j2 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 163186  on 117713  degrees of freedom
+Residual deviance: 150399  on 117693  degrees of freedom
+AIC: 150441
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
+</section>
+<section id="algo-3-logistique-bic" class="slide level2">
+<h2>Algo 3 : logistique BIC</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a> algo3 <span class="ot">&lt;-</span> <span class="fu">step</span>(algo1,<span class="at">trace=</span><span class="dv">0</span>,<span class="at">k=</span><span class="fu">log</span>(<span class="fu">nrow</span>(don_train_app)))</span>
+<span id="cb13-2"><a href="#cb13-2"></a> <span class="fu">summary</span>(algo3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = target ~ weight_j1 + height_j1 + age_j1 + classement_j1 + 
+    nb_match_won_last_5_j1 + avg_pct_ace_last_5_j1 + avg_pct_double_faults_last_5_j1 + 
+    avg_pct_first_serves_points_won_5_j1 + avg_pct_second_serves_points_won_5_j1 + 
+    weight_j2 + height_j2 + age_j2 + classement_j2 + nb_match_won_last_5_j2 + 
+    avg_pct_ace_last_5_j2 + avg_pct_double_faults_last_5_j2 + 
+    avg_pct_first_serves_points_won_5_j2 + avg_pct_second_serves_points_won_5_j2, 
+    family = "binomial", data = don_train_app)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-4.205  -1.087   0.000   1.087   4.205  
+
+Coefficients:
+                                        Estimate Std. Error z value Pr(&gt;|z|)
+(Intercept)                            3.104e-13  3.299e-01   0.000 1.000000
+weight_j1                              7.303e-03  1.398e-03   5.222 1.77e-07
+height_j1                             -5.696e-03  1.489e-03  -3.825 0.000131
+age_j1                                -2.133e-02  1.851e-03 -11.520  &lt; 2e-16
+classement_j1                         -5.788e-03  1.017e-04 -56.888  &lt; 2e-16
+nb_match_won_last_5_j1                 1.225e-01  7.088e-03  17.282  &lt; 2e-16
+avg_pct_ace_last_5_j1                  1.962e-02  1.897e-03  10.344  &lt; 2e-16
+avg_pct_double_faults_last_5_j1       -2.037e-02  3.844e-03  -5.300 1.16e-07
+avg_pct_first_serves_points_won_5_j1   1.455e-02  1.549e-03   9.393  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j1  1.352e-02  1.331e-03  10.158  &lt; 2e-16
+weight_j2                             -7.303e-03  1.398e-03  -5.222 1.77e-07
+height_j2                              5.696e-03  1.489e-03   3.825 0.000131
+age_j2                                 2.133e-02  1.851e-03  11.520  &lt; 2e-16
+classement_j2                          5.788e-03  1.017e-04  56.888  &lt; 2e-16
+nb_match_won_last_5_j2                -1.225e-01  7.088e-03 -17.282  &lt; 2e-16
+avg_pct_ace_last_5_j2                 -1.962e-02  1.897e-03 -10.344  &lt; 2e-16
+avg_pct_double_faults_last_5_j2        2.037e-02  3.844e-03   5.300 1.16e-07
+avg_pct_first_serves_points_won_5_j2  -1.455e-02  1.549e-03  -9.393  &lt; 2e-16
+avg_pct_second_serves_points_won_5_j2 -1.352e-02  1.331e-03 -10.158  &lt; 2e-16
+                                         
+(Intercept)                              
+weight_j1                             ***
+height_j1                             ***
+age_j1                                ***
+classement_j1                         ***
+nb_match_won_last_5_j1                ***
+avg_pct_ace_last_5_j1                 ***
+avg_pct_double_faults_last_5_j1       ***
+avg_pct_first_serves_points_won_5_j1  ***
+avg_pct_second_serves_points_won_5_j1 ***
+weight_j2                             ***
+height_j2                             ***
+age_j2                                ***
+classement_j2                         ***
+nb_match_won_last_5_j2                ***
+avg_pct_ace_last_5_j2                 ***
+avg_pct_double_faults_last_5_j2       ***
+avg_pct_first_serves_points_won_5_j2  ***
+avg_pct_second_serves_points_won_5_j2 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 163186  on 117713  degrees of freedom
+Residual deviance: 150417  on 117695  degrees of freedom
+AIC: 150455
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
 </section></section>
 <section id="généralisation-du-modèle" class="title-slide slide level1 center">
 <h1>Généralisation du modèle</h1>

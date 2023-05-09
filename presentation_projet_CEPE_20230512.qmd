@@ -175,4 +175,18 @@ don_train_valid <- don  %>%
  summary(algo1)
 ```
 
+## Algo 2 : logistique AIC
+
+```{r, echo=TRUE}
+algo2 <- step(algo1,trace=0)
+summary(algo2)
+```
+
+## Algo 3 : logistique BIC
+
+```{r, echo=TRUE}
+ algo3 <- step(algo1,trace=0,k=log(nrow(don_train_app)))
+ summary(algo3)
+```
+
 # Généralisation du modèle
