@@ -7,7 +7,7 @@ editor: visual
 
 # Problématique
 
-1.  Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les joueurs qui s'affrontent et sur le tournoi.
+1.  Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les 2 joueurs qui s'affrontent et sur le tournoi.
 
 2.  Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.
 
@@ -17,10 +17,48 @@ editor: visual
 
 Les fichiers source ont été récupérés sur le site [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data) :
 
--   Matches (n = 95 610)
+-   Matches : stats et scores de 1991 à 2017 (n = 95 610)
 -   Joueurs (n = 10 912)
 -   Classements (n = 2 694 539)
 -   Tournois (n = 4 114)
+
+## Calcul des stats sur les précédents matches
+
+Les stats suivantes sont calculées sur les 5 précédents matches, pour chaque joueur (winner et loser) :
+
+-   Nombre de matches gagnés
+
+-   Pourcentage d'aces
+
+-   Pourcentage de double fautes
+
+-   Pourcentage de premier service
+
+-   Pourcentage de points gagnés au premier service
+
+-   Pourcentage de points gagnés au deuxième service
+
+## Enrichissement de la base des matches
+
+-   A partir de la base des joueurs :
+
+    -   taille
+
+    -   poids
+
+    -   âge
+
+-   A partir de la base des tournois :
+
+    -   surface (terre battue, gazon, dur, moquette)
+
+    -   conditions (intérieur ou extérieur)
+
+-   A partir de la base des classements :
+
+    -   classement des joueurs au moment du match
+
+    -   calcul de la différence de classement entre les deux joueurs
 
 # Exploration de la base
 
