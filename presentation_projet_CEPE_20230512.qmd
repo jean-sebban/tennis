@@ -38,8 +38,9 @@ data <- readRDS("./data/don_sansNA.rds") %>%
   filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
 ```
 
-```{r}
-skim(data)
+```{r,echo=TRUE}
+
+summary(data)
 ```
 
 ## ACP
