@@ -1,6 +1,6 @@
 ---
 title: "Projet de Data Science"
-author: "Jean Sebban, Fally et Guillaume Allard"
+author: "Jean Sebban, Fally Sow et Guillaume Allard"
 format: revealjs
 editor: visual
 ---
@@ -52,9 +52,9 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
     -   conditions (intérieur ou extérieur)
 
 -   A partir de la base des **classements** (classements au moment du match + diff de classement)
-:::
 
-Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2 joueurs)
+-   Le fichier est constitué de 23 variables explicatives (dont 20 associées aux 2 joueurs)
+:::
 
 ## Preprocessing avant modélisation
 
