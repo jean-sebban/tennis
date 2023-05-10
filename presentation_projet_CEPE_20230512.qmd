@@ -267,7 +267,7 @@ don_train_app_gb <- don_train_app %>% mutate(target = as.numeric(target),
 ## Algo 9 : adaboost
 
 ```{r, echo=TRUE}
-algo9 <- gbm(target~.,data=dplyr::sample_n(don_train_app_gb,10000),distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
  mobt.ada <- gbm.perf(algo9,method = "cv")
  mobt.ada
 ```
@@ -275,7 +275,7 @@ algo9 <- gbm(target~.,data=dplyr::sample_n(don_train_app_gb,10000),distribution 
 ## Algo 10 : logit-boost
 
 ```{r, echo=TRUE}
-algo10 <- gbm(target~.,data=dplyr::sample_n(don_train_app_gb,10000),distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+algo10 <- gbm(target~.,data=don_train_app_gb,distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
 mobt.logit <- gbm.perf(algo10,method = "cv")
 mobt.logit
 ```
@@ -339,6 +339,7 @@ head(RES2)
 On choisit le taux de bien classés comme critère de performance du modèle. 
 
 ```{r}
-
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
 ```
 
