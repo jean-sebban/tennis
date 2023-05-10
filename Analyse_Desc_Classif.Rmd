@@ -1,0 +1,243 @@
+---
+title: "Analyse_Desc_Classif"
+author: "FKS"
+date: "2023-03-22"
+output: html_document
+---
+
+```{r}
+# Importation des Librairies
+# install.packages("rAmCharts")
+# install.packages("Hmisc")
+# install.packages("corrplot")
+
+library(tidyverse)
+library(ggplot2)
+library(rAmCharts)
+library(esquisse)
+library(Hmisc)
+library(corrplot)
+
+
+```
+
+
+
+```{r}
+don <- readRDS("fichiers/don_sansNA.rds")
+
+table(don$target)
+
+don <- don[,-24]  # Exlusion du match_stats_url_suffix
+
+# Baser l'analyse descriptive uniquement sur target=1 
+dondesc <- don %>%
+  filter(target==1)
+
+summary(dondesc)
+
+table(dondesc$tourney_surface)
+table(dondesc$tourney_conditions)
+summary(dondesc$age_j1)
+summary(dondesc$age_j2)
+
+summary(dondesc$weight_j1)
+
+
+```
+
+
+```{r cars}
+# ANALYSE UNIVARIEE 
+
+# La distribution par age des joueurs 1 et 2
+par(mfrow=c(1,2))
+ggplot(don) + aes(x = age_j1) +geom_bar()
+ggplot(don) + aes(x = age_j2) +geom_bar()
+
+# La distribution par poids des joueurs 1 et 2
+par(mfrow=c(1,2))
+ggplot(dondesc) + aes(x = weight_j1) +geom_bar()
+ggplot(dondesc) + aes(x = weight_j2) +geom_bar()
+
+# La distribution par classement des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = classement_j1) +geom_bar()
+ggplot(dondesc) + aes(x = classement_j2) +geom_bar()
+
+# La distribution par nb_match_won_last_5 des joueurs 1 et 2 
+# dondesc %>%  #_nb_match
+# gather(key,value, nb_match_won_last_5_j1, nb_match_won_last_5_j2) %>%
+# ggplot(aes(x = value), colour=key) +geom_bar()
+
+ggplot(dondesc) + aes(x = nb_match_won_last_5_j1) +geom_bar()
+ggplot(dondesc) + aes(x = nb_match_won_last_5_j2) +geom_bar()
+
+# La distribution par avg_pct_ace_last_5 des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = avg_pct_ace_last_5_j1,) +geom_histogram()
+ggplot(dondesc) + aes(x = avg_pct_ace_last_5_j2) +geom_histogram()
+
+# La distribution par avg_pct_double_faults_last_5 des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = avg_pct_double_faults_last_5_j1,) +geom_histogram()
+ggplot(dondesc) + aes(x = avg_pct_double_faults_last_5_j2) +geom_histogram()
+
+# La distribution par avg_pct_double_faults_last_5 des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = avg_pct_first_serves_in_5_j1,) +geom_histogram()
+ggplot(dondesc) + aes(x = avg_pct_first_serves_in_5_j2) +geom_histogram()
+
+# La distribution par avg_pct_double_faults_last_5 des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = avg_pct_first_serves_in_5_j1,) +geom_histogram()
+ggplot(dondesc) + aes(x = avg_pct_first_serves_in_5_j2) +geom_histogram()
+
+# La distribution par avg_pct_double_faults_last_5 des joueurs 1 et 2 
+ggplot(dondesc) + aes(x = avg_pct_second_serves_points_won_5_j1,) +geom_histogram()
+ggplot(dondesc) + aes(x = avg_pct_second_serves_points_won_5_j2) +geom_histogram()
+
+library(esquisse)
+avg_pct_second_serves_points_won_5_j2
+
+summary(dondesc$avg_pct_ace_last_5_j1)
+
+# test automatisation 
+donquanti <- don[, 2:21]
+donquanli <- don[, 21:23]
+for (i in 1:ncol(donquanti)) {
+  print(i)
+  par(ask=TRUE)
+  hist(unlist(donquanti [,i]), main = colnames(donquanti)[i],
+       ylab = "Count", col="steelblue", las = 2)
+}
+
+```
+```{r}
+# ANALYSE BIVARIEE
+
+# AGE Par rapport au classement 
+ggplot(don) + aes(x = age_j1, y= classement_j1) +geom_point()
+
+ggplot(dondesc) + aes(x = classement_j2) +geom_bar()
+ggplot(dondesc) + aes(x = nb_match_won_last_5_j2, y= classement_j2) +geom_point()
+
+ggplot(dondesc) + aes(x = classement_j1, y= classement_j2) +geom_point()
+
+
+
+install.packages("library(esquisse)")
+esquisser(don)
+
+```
+ANALYSE FACTORIELLE MULTIPLE 
+```{r}
+install.packages("FactoMineR")
+library(FactoMineR)
+
+donpca <- don[,2:21]
+donbis <- don[,2:23]
+
+resPCA <- PCA(donquanti)
+
+resPCA <- PCA(donbis,  quali.sup = 21:22) #, ncp = 5
+
+
+# Renommer les varibales quanti pour une meilleures lecture de la matrice de correlation entre les variables 
+donquanti_renammed <- donquanti %>% 
+  rename("class_j1"= "classement_j1", 
+         "class_j2"= "classement_j2", 
+         "dbl_Fault_last5_j1"="avg_pct_double_faults_last_5_j1",
+         "dbl_Fault_last5_j2"="avg_pct_double_faults_last_5_j2",
+         "1st_Serv_ptwon_j1"="avg_pct_first_serves_points_won_5_j1", 
+         "1st_Serv_ptwon_j2"="avg_pct_first_serves_points_won_5_j2", 
+         "2nd_Serv_ptwon_1"="avg_pct_second_serves_points_won_5_j1", 
+         "2nd_Serv_ptwon_j2"="avg_pct_second_serves_points_won_5_j2", 
+         "pct_ace_last5_j2"="avg_pct_ace_last_5_j2",
+         "pct_ace_last5_j1"="avg_pct_ace_last_5_j1",
+         "nb_match_won_j1" ="nb_match_won_last_5_j1",
+         "nb_match_won_j2"="nb_match_won_last_5_j2" )
+
+
+# Matrice de Corrélation 
+mcor <- cor(donquanti_renammed)
+mcor
+corrplot(mcor, type="upper", order="hclust", tl.col="black", tl.srt=45)
+
+#symnum(mcor, abbr.colnames=FALSE)
+```
+
+
+```{r}
+```
+
+Classification  Non Supervisée par la méthode de Kmeans 
+1.1 Classification 1
+```{r}
+# 
+# Selection des variables pour la Kmeans 
+donkmeans_1 <- donbis[,c(4,5, 6, 7, 8, 9, 10)]
+dctrl_1 = donbis[,c(4,5, 6, 7, 8, 9, 10)]
+
+# Standardisation des données 
+donkmeans_1 <- scale(donkmeans_1)
+
+set.seed(100)
+nb=20
+rapport=1:nb
+for (ii in 1:nb) {
+  tmp=kmeans(donkmeans_1, centers=ii)
+  rapport[ii]=tmp_1$betweens/tmp$totss
+}
+plot(rapport, type="b")
+
+# On retient 4 groupes 
+tmp_1=kmeans(donkmeans_1,centers=4,nstart=50)
+table(tmp$cluster)
+#boxplot(don$target~tmp$cluster)
+
+
+Caract_group = 
+  dctrl %>% 
+  group_by(tmp_1$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group)
+
+  #select(contains("_std")) %>% 
+```
+Caractérisation des groupes : Dans les groupes 1 et 3, on a les bons joueurs qui sont mieux positionnés dans le classement, toutefois, dans le groupe 3 il semble être meilleur en Service. nb de match gagnés et point Ace que le groupe 1.
+Le groupe 2 sont les joueurs moyens, qui sont assez bien en classement, cependant ils sont meilleurs en Service par rapport aux autres groupes 
+Le groupe 4 sont les moins bon 
+
+
+1.2 Classification 2
+Ajout d'autres varibales suite à la première classification 
+```{r}
+# 
+# Selection des variables pour la Kmeans 
+donkmeans_2 <- donbis[,c(1, 2, 3, 4, 8, 9, 10)]
+dctrl_2 = donbis[,c(1, 2, 3, 4, 8, 9, 10)]
+
+# Standardisation des données 
+donkmeans_2 <- scale(donkmeans_2)
+
+set.seed(100)
+nb=20
+rapport=1:nb
+for (ii in 1:nb) {
+  tmp=kmeans(donkmeans_2, centers=ii)
+  rapport[ii]=tmp$betweens/tmp$totss
+}
+plot(rapport, type="b")
+
+# On retient 4 groupes 
+tmp_2=kmeans(donkmeans_2,centers=4,nstart=50)
+table(tmp_2$cluster)
+#boxplot(don$target~tmp$cluster)
+
+
+Caract_group_2 = 
+  dctrl_2 %>% 
+  group_by(tmp_2$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group_2)
+
+```
+
