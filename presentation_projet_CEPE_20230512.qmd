@@ -451,7 +451,7 @@ RES[,"logitboost"] <-predict(algofinal,
                              newdata = don_test_gb,
                              type = "response",
                              n.trees = mobt.logit)
-RES
+head(RES)
 
 ```
 
