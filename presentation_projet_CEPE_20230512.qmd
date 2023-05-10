@@ -317,9 +317,26 @@ saveRDS(RES,"data/RES_app_valid.RDS")
 head(RES)
 ```
 
-## Règle de classification
+## Choix du seuil
 
 Si la probabilité est supérieure à 50 %, alors le matche est gagné par le joueur 1 (Y = 1).
+
+```{r}
+RES <- readRDS("data/RES_app_valid.RDS")
+RES2 <- RES
+
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+head(RES2)
+```
+
+## Choix du critère
+
+On choisit le taux de bien classés comme critère de performance du modèle. 
 
 ```{r}
 

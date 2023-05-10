@@ -647,7 +647,9 @@ RES <- data.frame(Y=don_train_valid$target)
  mobt.logit <- gbm.perf(algo10,method = "cv")
  RES[,"logitboost"] <-predict(algo10,newdata = don_train_valid_gb,type = "response",n.trees = mobt.logit)
  
- saveRDS(RES,"data/RES_app_valid.RDS")
+saveRDS(algo1,"data/algos/algo1.RDS")
+saveRDS(algo2,"data/algos/algo2.RDS")
+saveRDS(RES,"data/RES_app_valid.RDS")
 ```
 
 
