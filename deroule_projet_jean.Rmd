@@ -649,6 +649,14 @@ RES <- data.frame(Y=don_train_valid$target)
  
 saveRDS(algo1,"data/algos/algo1.RDS")
 saveRDS(algo2,"data/algos/algo2.RDS")
+saveRDS(algo3,"data/algos/algo3.RDS")
+saveRDS(algo4,"data/algos/algo4.RDS")
+saveRDS(algo5,"data/algos/algo5.RDS")
+saveRDS(algo6,"data/algos/algo6.RDS")
+saveRDS(algo7,"data/algos/algo7.RDS")
+saveRDS(algo8,"data/algos/algo8.RDS")
+saveRDS(algo9,"data/algos/algo9.RDS")
+saveRDS(algo10,"data/algos/algo10.RDS")
 saveRDS(RES,"data/RES_app_valid.RDS")
 ```
 
