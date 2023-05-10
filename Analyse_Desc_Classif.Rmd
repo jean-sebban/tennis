@@ -24,7 +24,7 @@ library(corrplot)
 
 
 ```{r}
-don <- readRDS("fichiers/don_sansNA.rds")
+don <- readRDS("data/don_sansNA.rds")
 
 table(don$target)
 
@@ -182,18 +182,18 @@ nb=20
 rapport=1:nb
 for (ii in 1:nb) {
   tmp=kmeans(donkmeans_1, centers=ii)
-  rapport[ii]=tmp_1$betweens/tmp$totss
+  rapport[ii]=tmp$betweens/tmp$totss
 }
 plot(rapport, type="b")
 
 # On retient 4 groupes 
 tmp_1=kmeans(donkmeans_1,centers=4,nstart=50)
-table(tmp$cluster)
+table(tmp_1$cluster)
 #boxplot(don$target~tmp$cluster)
 
 
-Caract_group = 
-  dctrl %>% 
+Caract_group <- 
+  dctrl_1 %>% 
   group_by(tmp_1$cluster) %>% 
   summarise_all(mean)
 
