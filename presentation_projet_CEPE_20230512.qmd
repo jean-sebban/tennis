@@ -11,6 +11,18 @@ editor: visual
 
 2.  Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.
 
+## Sommaire
+
+1.  Constitution de la base des matches
+
+2.  Exploration de la base
+
+3.  Calibrage des paramètres des modèles
+
+4.  Comparaisons des performances des modèles
+
+5.  Généralisation du modèle
+
 # 1 - Constitution de la base des matches
 
 ## Importation des fichiers
@@ -113,7 +125,7 @@ plot(res.pca,choix = "var")
 dimdesc(res.pca)
 ```
 
-# 3 - Paramétrage des modèles
+# 3 - Calibrage des paramètres des modèles
 
 ```{r}
 library(glmnet)
@@ -178,8 +190,6 @@ algo1 <- readRDS("data/algos/algo1.RDS")
 summary(algo1)
 ```
 
-
-
 ## Algo 2 : logistique AIC
 
 ```{r, echo=TRUE, eval=FALSE}
@@ -192,8 +202,6 @@ algo2 <- readRDS("data/algos/algo2.RDS")
 summary(algo2)
 ```
 
-
-
 ## Algo 3 : logistique BIC
 
 ```{r, echo=TRUE, eval=FALSE}
@@ -205,8 +213,6 @@ summary(algo2)
 algo3 <- readRDS("data/algos/algo3.RDS")
  summary(algo3)
 ```
-
-
 
 # Arbres et forêts aléatoires
 
@@ -301,21 +307,18 @@ don_train_app_gb <- don_train_app %>% mutate(target = as.numeric(target),
 
 ## Algo 9 : adaboost
 
-
-
 ```{r echo=TRUE, eval=FALSE}
 algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
  mobt.ada <- gbm.perf(algo9,method = "cv")
  mobt.ada
 ```
+
 ```{r}
 algo9 <- readRDS("data/algos/algo9.RDS")
 mobt.ada <- gbm.perf(algo9,method = "cv")
 ```
 
 ## Algo 10 : logit-boost
-
-
 
 ```{r, echo=TRUE, eval=FALSE}
 algo10 <- gbm(target~.,data=don_train_app_gb,distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
@@ -328,7 +331,7 @@ algo10 <- readRDS("data/algos/algo10.RDS")
 mobt.logit <- gbm.perf(algo10,method = "cv")
 ```
 
-# Comparaisons des performances
+# 4 - Comparaisons des performances des modèles
 
 ## Calcul des probabilités
 
@@ -384,9 +387,88 @@ head(RES2)
 
 ## Choix du critère
 
-On choisit le taux de bien classés comme critère de performance du modèle.
+On choisit le **taux de bien classés** (accuracy) comme critère de performance du modèle.
 
 ```{r}
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
 sort(apply(RES2,2,precis,Y=RES2$Y))
 ```
+
+## Autres critères
+
+```{r}
+library(pROC)
+library(purrr)
+```
+
+```{r}
+auctoutlemonde <- roc(Y~.,data=RES)
+res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("accuracy","sensitivity",
+                                                "specificity","recall"))
+rownames(res) <- names(RES)[-1]
+perf <- arrange(res,-accuracy)
+kableExtra::kable(perf)
+```
+
+# 5 - Généralisation du modèle
+
+## Définition du modèle final
+
+```{r}
+#Fichier d'apprentissage pour gradient boosting
+don_train_gb <- don_train %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
+#   
+# 
+#fichier de test pour gradient boosting
+don_test_gb <- don_test %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
+```
+
+```{r, eval=FALSE, echo=TRUE}
+algofinal <- gbm(target~.,data=don_train_gb,distribution = "bernoulli",
+                 n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+mobt.logit <- gbm.perf(algofinal,method = "cv")
+
+
+
+```
+
+```{r}
+algofinal <- readRDS("data/algos/algofinal.RDS")
+mobt.logit <- gbm.perf(algofinal,method = "cv")
+```
+
+## Prévision sur le fichier test
+
+```{r, echo=TRUE}
+RES <- data.frame(Y=don_test$target)
+RES[,"logitboost"] <-predict(algofinal,
+                             newdata = don_test_gb,
+                             type = "response",
+                             n.trees = mobt.logit)
+RES
+
+```
+
+## Calcul de la performance
+
+On prend un seuil à 50 % et on peut calculer le taux de mal classés (accuracy) sur le fichier test.
+
+```{r}
+RES2 <- RES
+#Paramétrage du seuil
+s <- 0.5
+#boucle qui prend comme seuil 50%
+for(ii in 2:ncol(RES2)){
+  RES2[,ii] <- cut(RES2[,ii],breaks=c(-0.01,s,1.01),labels=c("0","1"))
+}
+precis <- function(X,Y){sum(X==Y)/length(X)*100}
+sort(apply(RES2,2,precis,Y=RES2$Y))
+```
+
+![](images/IMG_6973-01.jpg)

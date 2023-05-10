@@ -737,44 +737,45 @@ saveRDS(perf,"data/perf_app_valid.rds")
 
 # 4 - Généralisation du modèle retenu
 
-L'algorithme retenu est donc le random forest. On le recalcule sur tout le fichier d'entraînement (en intégrant les matches des annéees 2013 à 2014). Et on le généralise sur le fichier qui n'a pas du tout été utilisé pour construire  le modèle : le fichier test (avec les matches des années 2015, 2016 et 2017).
-
-Les matches sur moquette ne sont pas utilisés dans l'algorithme.
-
+L'algorithme retenu est donc le logit boost. On le recalcule sur tout le fichier d'entraînement (en intégrant les matches des annéees 2013 à 2014). Et on le généralise sur le fichier qui n'a pas du tout été utilisé pour construire  le modèle : le fichier test (avec les matches des années 2015, 2016 et 2017).
 
 ```{r}
 
-#fichier d'apprentissage contenant tous les matches de 1991 à 2014 
-#auquel on enlève les matches sur moquette qui ne sont pas dans les matches récents
-don_train <- don_train  %>% 
-  filter(tourney_surface != "carpet")
 
-#Construction d'une version matrice pour glmnet : apprentissage
-XXA <- model.matrix(target~.,data=don_train)   #version matrice
-YYA <- don_train_app$target
+# #Construction d'une version matrice pour glmnet : apprentissage
+# XXA <- model.matrix(target~.,data=don_train)   #version matrice
+# YYA <- don_train_app$target
+# 
+# XXT <- model.matrix(target~.,data=don_test)
 
-XXT <- model.matrix(target~.,data=don_test)
-
-# #Fichier d'apprentissage pour gradient boosting
-# don_train <- don_train %>% mutate(target = as.numeric(target),
-#                                              target = case_when(
-#                                                target == 1 ~ 0,
-#                                                target == 2 ~ 1))  
+#Fichier d'apprentissage pour gradient boosting
+don_train_gb <- don_train %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
 #   
 # 
-# #fichier de validation pour gradient boosting
-# don_test <- don_test %>% mutate(target = as.numeric(target),
-#                                              target = case_when(
-#                                                target == 1 ~ 0,
-#                                                target == 2 ~ 1)) 
+#fichier de test pour gradient boosting
+don_test_gb <- don_test %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
 ```
 
-## Application du random forest sur le fichier d'entraînement
+## Application du logit boost sur le fichier d'entraînement
 
 ```{r}
+
+algofinal <- gbm(target~.,data=don_train_gb,distribution = "bernoulli",
+                 n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+mobt.logit <- gbm.perf(algofinal,method = "cv")
+saveRDS(algofinal,"data/algos/algofinal.RDS")
+
 RES <- data.frame(Y=don_test$target)
-algo5 <- randomForest(target~.,data=don_train)
-RES[,"foret"] <- predict(algo5,don_test,type="prob")[,2]
+RES[,"logitboost"] <-predict(algofinal,
+                             newdata = don_test_gb,
+                             type = "response",
+                             n.trees = mobt.logit)
 
 saveRDS(RES,"data/RES_generalisation.rds")
 ```
