@@ -11,7 +11,7 @@ editor: visual
 
 2.  Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.
 
-# Constitution de la base des matches
+# 1 - Constitution de la base des matches
 
 ## Importation des fichiers
 
@@ -68,7 +68,7 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
 -   Nettoyage final (mise en factor, traitement anomalies) : **n = 149 852**
 :::
 
-# Exploration de la base
+# 2 - Exploration de la base
 
 ```{r}
 library(skimr)
@@ -115,7 +115,7 @@ plot(res.pca,choix = "var")
 dimdesc(res.pca)
 ```
 
-# Comparaison des modèles
+# 3 - Paramétrage des modèles
 
 ```{r}
 library(glmnet)
@@ -129,7 +129,7 @@ don <- readRDS("data/don_sansNA.rds")
 
 ## Séparation en fichier entraînement/test
 
-```{r, echo = TRUE}
+```{r}
 
 #fichier d'entraînement avec les matches de 1991 à 2014
 don_train <- don %>% 
@@ -166,7 +166,7 @@ don_train_valid <- don  %>%
 
 ```
 
-# Regression logistique
+# Modèles de regression logistique
 
 ## Algo 1 : regression logistique complète
 
@@ -189,7 +189,7 @@ summary(algo2)
  summary(algo3)
 ```
 
-# Arbres et forêt aléatoire
+# Arbres et forêts aléatoires
 
 ## Algo 4 : arbre, choix de la profondeur
 
@@ -204,7 +204,7 @@ algo4 <- rpart(target~.,data=don_train_app,cp=0.0001,minsplit=5)
 printcp(algo4)
 ```
 
-## Algo4 Arbre : représentation
+## Algo 4 Arbre : représentation
 
 ```{r}
 algo4 <- rpart(target~.,data=don_train_app,cp=0.00026335,minsplit=5)
@@ -235,20 +235,93 @@ YYA <- don_train_app$target
 
 ```{r,echo=TRUE}
 algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
+algo6$lambda.min
+algo6$lambda.1se
 ```
 
 ## Algo 7 : Regression lasso
 
 ```{r,echo=TRUE}
  algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
+algo7$lambda.min
+algo7$lambda.1se
 ```
 
-## Algo 8 : Regression elastic-net
+## Algo 8 : Regression elastic net
 
 ```{r,echo=TRUE}
 algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
+algo8$lambda.min
+algo8$lambda.1se
 ```
 
 # Gradient-boosting
 
-# Généralisation du modèle
+```{r}
+don_train_app_gb <- don_train_app %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
+```
+
+## Algo 9 : adaboost
+
+```{r, echo=TRUE}
+algo9 <- gbm(target~.,data=dplyr::sample_n(don_train_app_gb,10000),distribution = "adaboost",n.trees = 3000,shrinkage = 0.01,cv.folds = 5)
+ mobt.ada <- gbm.perf(algo9,method = "cv")
+ mobt.ada
+```
+
+## Algo 10 : logit-boost
+
+```{r, echo=TRUE}
+algo10 <- gbm(target~.,data=dplyr::sample_n(don_train_app_gb,10000),distribution = "bernoulli",n.trees = 3000,shrinkage = 0.05,cv.folds = 5)
+mobt.logit <- gbm.perf(algo10,method = "cv")
+mobt.logit
+```
+
+# Comparaisons des performances
+
+## Calcul des probabilités
+
+On calcule les probabilités sur le fichier de validation (matches de 2013 et 2014).
+
+```{r}
+#fichier de validation pour glmnet
+XXT <- model.matrix(target~.,data=don_train_valid)
+
+#fichier de validation pour gradient-boosting
+don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
+                                             target = case_when(
+                                               target == 1 ~ 0,
+                                               target == 2 ~ 1))
+
+RES <- data.frame(Y=don_train_valid$target)
+RES[,"log"] <- predict(algo1,don_train_valid,type="response")
+RES[,"AIC"] <- predict(algo2,don_train_valid,type="response")
+RES[,"BIC"] <- predict(algo3,don_train_valid,type="response")
+RES[,"arbre"] <- predict(algo4,don_train_valid)[,2]
+RES[,"foret"] <- predict(algo5,don_train_valid,type="prob")[,2]
+RES[,"ridgemin"] <- predict(algo6,newx=XXT,s ="lambda.min",type="response") %>% as.numeric()
+RES[,"ridge1se"] <- predict(algo6,newx=XXT,s ="lambda.1se",type="response") %>% as.numeric()
+RES[,"lassomin"] <- predict(algo7,newx=XXT,s ="lambda.min",type="response") %>% as.numeric()
+RES[,"lasso1se"] <- predict(algo7,newx=XXT,s ="lambda.1se",type="response") %>% as.numeric()
+RES[,"elasmin"] <- predict(algo8,newx=XXT,s ="lambda.min",type="response") %>% as.numeric()
+RES[,"elas1se"] <- predict(algo8,newx=XXT,s ="lambda.1se",type="response") %>% as.numeric()
+RES[,"adaboost"] <-predict(algo9,newdata = don_train_valid_gb,type = "response",n.trees = mobt.ada)
+RES[,"logitboost"] <-predict(algo10,newdata = don_train_valid_gb,type = "response",n.trees = mobt.logit)
+saveRDS(RES,"data/RES_app_valid.RDS")
+```
+
+```{r}
+head(RES)
+```
+
+## Règle de classification
+
+Si la probabilité est supérieure à 50 %, alors le matche est gagné par le joueur 1 (Y = 1).
+
+```{r}
+
+```
+
