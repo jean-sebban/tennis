@@ -296,7 +296,7 @@ algo3 <- readRDS("data/algos/algo3.RDS")
 
 # Arbres et forêts aléatoires
 
-## Algo 4 : arbre, choix de la profondeur
+## Algo 4 : Arbre, choix de la profondeur
 
 ```{r}
 library(rpart)
@@ -309,7 +309,7 @@ algo4 <- rpart(target~.,data=don_train_app,cp=0.0001,minsplit=5)
 printcp(algo4)
 ```
 
-## Algo 4 Arbre : représentation
+## Algo 4 : Arbre optimisé
 
 ```{r}
 algo4 <- rpart(target~.,data=don_train_app,cp=0.00032282,minsplit=5)
@@ -333,8 +333,6 @@ algo5 <- readRDS("data/algos/algo5.RDS")
 algo5
 ```
 
-
-
 # Regression sous contrainte
 
 ```{r}
@@ -345,21 +343,18 @@ YYA <- don_train_app$target
 
 ## Algo 6 : Regression ridge
 
-```{r}
-algo6 <- readRDS("data/algos/algo6.RDS")
-```
-
 ```{r,echo=TRUE, eval=FALSE}
 algo6 <- cv.glmnet(XXA,YYA,alpha=0,family="binomial")
 algo6$lambda.min
 algo6$lambda.1se
 ```
 
-## Algo 7 : Regression lasso
-
 ```{r}
-algo7 <- readRDS("data/algos/algo7.RDS")
+algo6 <- readRDS("data/algos/algo6.RDS")
+algo6
 ```
+
+## Algo 7 : Regression lasso
 
 ```{r,echo=TRUE, eval=FALSE}
 algo7 <- cv.glmnet(XXA,YYA,alpha=1,family="binomial")
@@ -367,16 +362,22 @@ algo7$lambda.min
 algo7$lambda.1se
 ```
 
-## Algo 8 : Regression elastic net
-
 ```{r}
-algo8 <- readRDS("data/algos/algo8.RDS")
+algo7 <- readRDS("data/algos/algo7.RDS")
+algo7
 ```
+
+## Algo 8 : Regression elastic net
 
 ```{r,echo=TRUE, eval=FALSE}
 algo8 <- cv.glmnet(XXA,YYA,alpha=0.5,family="binomial")
 algo8$lambda.min
 algo8$lambda.1se
+```
+
+```{r}
+algo8 <- readRDS("data/algos/algo8.RDS")
+algo8
 ```
 
 # Gradient-boosting
@@ -399,6 +400,7 @@ algo9 <- gbm(target~.,data=don_train_app_gb,distribution = "adaboost",n.trees = 
 ```{r}
 algo9 <- readRDS("data/algos/algo9.RDS")
 mobt.ada <- gbm.perf(algo9,method = "cv")
+mobt.ada
 ```
 
 ## Algo 10 : logit-boost
@@ -418,7 +420,7 @@ mobt.logit <- gbm.perf(algo10,method = "cv")
 
 ## Calcul des probabilités
 
-On calcule les probabilités sur le fichier de validation (matches de 2013 et 2014).
+Calcul des probas sur le fichier de validation (matches de 2013 et 2014).
 
 ```{r, eval=FALSE}
 #fichier de validation pour glmnet
@@ -449,6 +451,8 @@ saveRDS(RES,"data/RES_app_valid.RDS")
 
 ```{r}
 RES <- readRDS("data/RES_app_valid.RDS")
+set.seed(1237)
+RES <- sample_n(RES,nrow(RES))
 head(RES)
 ```
 
@@ -490,7 +494,7 @@ res <- map_df(auctoutlemonde,coords,x=0.5,ret=c("accuracy","sensitivity",
                                                 "specificity","recall"))
 rownames(res) <- names(RES)[-1]
 perf <- arrange(res,-accuracy)
-kableExtra::kable(perf)
+perf
 ```
 
 # 5 - Généralisation du modèle
@@ -524,6 +528,13 @@ mobt.logit <- gbm.perf(algofinal,method = "cv")
 ```{r}
 algofinal <- readRDS("data/algos/algofinal.RDS")
 mobt.logit <- gbm.perf(algofinal,method = "cv")
+mobt.logit
+```
+
+## Variables influentes
+
+```{r}
+summary(algofinal,graph=FALSE)[1:10,]
 ```
 
 ## Prévision sur le fichier test

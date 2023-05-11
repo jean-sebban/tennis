@@ -9052,7 +9052,7 @@ Number of Fisher Scoring iterations: 4</code></pre>
 
 </section>
 <section id="algo-4-arbre-choix-de-la-profondeur" class="slide level2">
-<h2>Algo 4 : arbre, choix de la profondeur</h2>
+<h2>Algo 4 : Arbre, choix de la profondeur</h2>
 <div class="cell">
 
 </div>
@@ -9115,8 +9115,8 @@ n= 117714
 </div>
 </div>
 </section>
-<section id="algo-4-arbre-représentation" class="slide level2">
-<h2>Algo 4 Arbre : représentation</h2>
+<section id="algo-4-arbre-optimisé" class="slide level2">
+<h2>Algo 4 : Arbre optimisé</h2>
 <div class="cell">
 <div class="cell-output-display">
 <div id="htmlwidget-43609d342a93e83cf41c" style="width:100%;height:600px;" class="visNetwork html-widget"></div>
@@ -9160,34 +9160,61 @@ Confusion matrix:
 <section id="algo-6-regression-ridge" class="slide level2">
 <h2>Algo 6 : Regression ridge</h2>
 <div class="cell">
-
-</div>
-<div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>algo6 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="dv">0</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
 <span id="cb21-2"><a href="#cb21-2"></a>algo6<span class="sc">$</span>lambda.min</span>
 <span id="cb21-3"><a href="#cb21-3"></a>algo6<span class="sc">$</span>lambda<span class="fl">.1</span>se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:  cv.glmnet(x = XXA, y = YYA, alpha = 0, family = "binomial") 
+
+Measure: Binomial Deviance 
+
+     Lambda Index Measure       SE Nonzero
+min 0.01243   100   1.278 0.001470      25
+1se 0.03795    88   1.280 0.001345      25</code></pre>
+</div>
 </div>
 </section>
 <section id="algo-7-regression-lasso" class="slide level2">
 <h2>Algo 7 : Regression lasso</h2>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>algo7 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="dv">1</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
+<span id="cb23-2"><a href="#cb23-2"></a>algo7<span class="sc">$</span>lambda.min</span>
+<span id="cb23-3"><a href="#cb23-3"></a>algo7<span class="sc">$</span>lambda<span class="fl">.1</span>se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>algo7 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="dv">1</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
-<span id="cb22-2"><a href="#cb22-2"></a>algo7<span class="sc">$</span>lambda.min</span>
-<span id="cb22-3"><a href="#cb22-3"></a>algo7<span class="sc">$</span>lambda<span class="fl">.1</span>se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:  cv.glmnet(x = XXA, y = YYA, alpha = 1, family = "binomial") 
+
+Measure: Binomial Deviance 
+
+      Lambda Index Measure       SE Nonzero
+min 0.000679    57   1.278 0.001761      19
+1se 0.005256    35   1.280 0.001609      15</code></pre>
+</div>
 </div>
 </section>
 <section id="algo-8-regression-elastic-net" class="slide level2">
 <h2>Algo 8 : Regression elastic net</h2>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>algo8 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="fl">0.5</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
+<span id="cb25-2"><a href="#cb25-2"></a>algo8<span class="sc">$</span>lambda.min</span>
+<span id="cb25-3"><a href="#cb25-3"></a>algo8<span class="sc">$</span>lambda<span class="fl">.1</span>se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>algo8 <span class="ot">&lt;-</span> <span class="fu">cv.glmnet</span>(XXA,YYA,<span class="at">alpha=</span><span class="fl">0.5</span>,<span class="at">family=</span><span class="st">"binomial"</span>)</span>
-<span id="cb23-2"><a href="#cb23-2"></a>algo8<span class="sc">$</span>lambda.min</span>
-<span id="cb23-3"><a href="#cb23-3"></a>algo8<span class="sc">$</span>lambda<span class="fl">.1</span>se</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:  cv.glmnet(x = XXA, y = YYA, alpha = 0.5, family = "binomial") 
+
+Measure: Binomial Deviance 
+
+      Lambda Index Measure       SE Nonzero
+min 0.001237    58   1.278 0.001798      21
+1se 0.009579    36   1.280 0.001591      17</code></pre>
+</div>
 </div>
 </section></section>
 <section>
@@ -9200,18 +9227,23 @@ Confusion matrix:
 <section id="algo-9-adaboost" class="slide level2">
 <h2>Algo 9 : adaboost</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>algo9 <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app_gb,<span class="at">distribution =</span> <span class="st">"adaboost"</span>,<span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.01</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
-<span id="cb24-2"><a href="#cb24-2"></a> mobt.ada <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algo9,<span class="at">method =</span> <span class="st">"cv"</span>)</span>
-<span id="cb24-3"><a href="#cb24-3"></a> mobt.ada</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>algo9 <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app_gb,<span class="at">distribution =</span> <span class="st">"adaboost"</span>,<span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.01</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
+<span id="cb27-2"><a href="#cb27-2"></a> mobt.ada <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algo9,<span class="at">method =</span> <span class="st">"cv"</span>)</span>
+<span id="cb27-3"><a href="#cb27-3"></a> mobt.ada</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="cell">
 
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3000</code></pre>
+</div>
+</div>
 <img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-80-1.png" width="960" class="r-stretch"></section>
 <section id="algo-10-logit-boost" class="slide level2">
 <h2>Algo 10 : logit-boost</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>algo10 <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app_gb,<span class="at">distribution =</span> <span class="st">"bernoulli"</span>,<span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.05</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
-<span id="cb25-2"><a href="#cb25-2"></a>mobt.logit <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algo10,<span class="at">method =</span> <span class="st">"cv"</span>)</span>
-<span id="cb25-3"><a href="#cb25-3"></a>mobt.logit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>algo10 <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_app_gb,<span class="at">distribution =</span> <span class="st">"bernoulli"</span>,<span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.05</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
+<span id="cb29-2"><a href="#cb29-2"></a>mobt.logit <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algo10,<span class="at">method =</span> <span class="st">"cv"</span>)</span>
+<span id="cb29-3"><a href="#cb29-3"></a>mobt.logit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 <img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-84-1.png" width="960" class="r-stretch"></section></section>
@@ -9222,26 +9254,26 @@ Confusion matrix:
 </section>
 <section id="calcul-des-probabilités" class="slide level2">
 <h2>Calcul des probabilités</h2>
-<p>On calcule les probabilités sur le fichier de validation (matches de 2013 et 2014).</p>
+<p>Calcul des probas sur le fichier de validation (matches de 2013 et 2014).</p>
 <div class="cell">
 
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>  Y       log       AIC       BIC     arbre foret  ridgemin  ridge1se  lassomin
-1 1 0.9975590 0.9975590 0.9976331 0.7188304 0.704 0.9964707 0.9935872 0.9974209
-2 1 0.9007569 0.9007569 0.9015260 0.7188304 0.586 0.8871855 0.8623700 0.8968540
-3 1 0.8830866 0.8830866 0.8824554 0.7188304 0.562 0.8697003 0.8458112 0.8820669
-4 1 0.9658165 0.9658165 0.9658024 0.7188304 0.704 0.9593354 0.9460581 0.9643951
-5 1 0.4862294 0.4862294 0.4796477 0.2811696 0.430 0.4906771 0.4967918 0.4858404
-6 1 0.3874294 0.3874294 0.3893113 0.2811696 0.438 0.3928508 0.4017037 0.3888113
+1 1 0.4988601 0.4988601 0.5045816 0.6615385 0.448 0.5003646 0.5024505 0.4994222
+2 1 0.2738904 0.2738904 0.2757852 0.4000890 0.390 0.2794832 0.2902024 0.2779720
+3 0 0.5482552 0.5482552 0.5473299 0.7188304 0.614 0.5448045 0.5399253 0.5485898
+4 1 0.5699609 0.5699609 0.5786190 0.5528917 0.596 0.5664673 0.5610414 0.5669928
+5 0 0.6196978 0.6196978 0.6186909 0.7188304 0.832 0.6057604 0.5847337 0.6175876
+6 1 0.7319061 0.7319061 0.7296958 0.7188304 0.650 0.7245620 0.7118034 0.7284793
    lasso1se   elasmin   elas1se  adaboost logitboost
-1 0.9965000 0.9973450 0.9956987 0.5060318  0.7724654
-2 0.8819114 0.8960593 0.8743953 0.5060318  0.7400533
-3 0.8732099 0.8808425 0.8641485 0.5060318  0.6325830
-4 0.9548056 0.9639914 0.9511291 0.5060318  0.7950407
-5 0.4723000 0.4865092 0.4780688 0.4940474  0.4368660
-6 0.4026414 0.3891343 0.4042264 0.4940474  0.3851119</code></pre>
+1 0.5004328 0.4994444 0.5011482 0.4970740  0.5189653
+2 0.3116829 0.2778827 0.3099027 0.4940474  0.2853246
+3 0.5535706 0.5480445 0.5494582 0.5060318  0.6524489
+4 0.5615616 0.5671031 0.5615970 0.5060318  0.5608028
+5 0.6243074 0.6163948 0.6135995 0.5060318  0.7688964
+6 0.7060021 0.7283396 0.7051852 0.5060318  0.7191481</code></pre>
 </div>
 </div>
 </section>
@@ -9251,19 +9283,19 @@ Confusion matrix:
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>  Y log AIC BIC arbre foret ridgemin ridge1se lassomin lasso1se elasmin elas1se
-1 1   1   1   1     1     1        1        1        1        1       1       1
-2 1   1   1   1     1     1        1        1        1        1       1       1
-3 1   1   1   1     1     1        1        1        1        1       1       1
+1 1   0   0   1     1     0        1        1        0        1       0       1
+2 1   0   0   0     0     0        0        0        0        0       0       0
+3 0   1   1   1     1     1        1        1        1        1       1       1
 4 1   1   1   1     1     1        1        1        1        1       1       1
-5 1   0   0   0     0     0        0        0        0        0       0       0
-6 1   0   0   0     0     0        0        0        0        0       0       0
+5 0   1   1   1     1     1        1        1        1        1       1       1
+6 1   1   1   1     1     1        1        1        1        1       1       1
   adaboost logitboost
-1        1          1
-2        1          1
+1        0          1
+2        0          0
 3        1          1
 4        1          1
-5        0          0
-6        0          0</code></pre>
+5        1          1
+6        1          1</code></pre>
 </div>
 </div>
 </section>
@@ -9285,113 +9317,21 @@ Confusion matrix:
 
 </div>
 <div class="cell">
-<div class="cell-output-display">
-
-<table>
- <thead>
-  <tr>
-   <th style="text-align:left;">   </th>
-   <th style="text-align:right;"> accuracy </th>
-   <th style="text-align:right;"> sensitivity </th>
-   <th style="text-align:right;"> specificity </th>
-   <th style="text-align:right;"> recall </th>
-  </tr>
- </thead>
-<tbody>
-  <tr>
-   <td style="text-align:left;"> logitboost </td>
-   <td style="text-align:right;"> 0.6681974 </td>
-   <td style="text-align:right;"> 0.6679639 </td>
-   <td style="text-align:right;"> 0.6684309 </td>
-   <td style="text-align:right;"> 0.6679639 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> foret </td>
-   <td style="text-align:right;"> 0.6634496 </td>
-   <td style="text-align:right;"> 0.6645392 </td>
-   <td style="text-align:right;"> 0.6623599 </td>
-   <td style="text-align:right;"> 0.6645392 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> arbre </td>
-   <td style="text-align:right;"> 0.6628269 </td>
-   <td style="text-align:right;"> 0.6636052 </td>
-   <td style="text-align:right;"> 0.6620486 </td>
-   <td style="text-align:right;"> 0.6636052 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> adaboost </td>
-   <td style="text-align:right;"> 0.6611924 </td>
-   <td style="text-align:right;"> 0.6586239 </td>
-   <td style="text-align:right;"> 0.6637609 </td>
-   <td style="text-align:right;"> 0.6586239 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> lasso1se </td>
-   <td style="text-align:right;"> 0.6469489 </td>
-   <td style="text-align:right;"> 0.6469489 </td>
-   <td style="text-align:right;"> 0.6469489 </td>
-   <td style="text-align:right;"> 0.6469489 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> elas1se </td>
-   <td style="text-align:right;"> 0.6455479 </td>
-   <td style="text-align:right;"> 0.6455479 </td>
-   <td style="text-align:right;"> 0.6455479 </td>
-   <td style="text-align:right;"> 0.6455479 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> log </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> AIC </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> elasmin </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-   <td style="text-align:right;"> 0.6419676 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> lassomin </td>
-   <td style="text-align:right;"> 0.6416563 </td>
-   <td style="text-align:right;"> 0.6416563 </td>
-   <td style="text-align:right;"> 0.6416563 </td>
-   <td style="text-align:right;"> 0.6416563 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> ridgemin </td>
-   <td style="text-align:right;"> 0.6415006 </td>
-   <td style="text-align:right;"> 0.6415006 </td>
-   <td style="text-align:right;"> 0.6415006 </td>
-   <td style="text-align:right;"> 0.6415006 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> BIC </td>
-   <td style="text-align:right;"> 0.6413450 </td>
-   <td style="text-align:right;"> 0.6413450 </td>
-   <td style="text-align:right;"> 0.6413450 </td>
-   <td style="text-align:right;"> 0.6413450 </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> ridge1se </td>
-   <td style="text-align:right;"> 0.6394770 </td>
-   <td style="text-align:right;"> 0.6394770 </td>
-   <td style="text-align:right;"> 0.6394770 </td>
-   <td style="text-align:right;"> 0.6394770 </td>
-  </tr>
-</tbody>
-</table>
-
+<div class="cell-output cell-output-stdout">
+<pre><code>            accuracy sensitivity specificity    recall
+logitboost 0.6681974   0.6679639   0.6684309 0.6679639
+foret      0.6634496   0.6645392   0.6623599 0.6645392
+arbre      0.6628269   0.6636052   0.6620486 0.6636052
+adaboost   0.6611924   0.6586239   0.6637609 0.6586239
+lasso1se   0.6469489   0.6469489   0.6469489 0.6469489
+elas1se    0.6455479   0.6455479   0.6455479 0.6455479
+log        0.6419676   0.6419676   0.6419676 0.6419676
+AIC        0.6419676   0.6419676   0.6419676 0.6419676
+elasmin    0.6419676   0.6419676   0.6419676 0.6419676
+lassomin   0.6416563   0.6416563   0.6416563 0.6416563
+ridgemin   0.6415006   0.6415006   0.6415006 0.6415006
+BIC        0.6413450   0.6413450   0.6413450 0.6413450
+ridge1se   0.6394770   0.6394770   0.6394770 0.6394770</code></pre>
 </div>
 </div>
 </section></section>
@@ -9406,21 +9346,56 @@ Confusion matrix:
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>algofinal <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_gb,<span class="at">distribution =</span> <span class="st">"bernoulli"</span>,</span>
-<span id="cb29-2"><a href="#cb29-2"></a>                 <span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.05</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
-<span id="cb29-3"><a href="#cb29-3"></a>mobt.logit <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algofinal,<span class="at">method =</span> <span class="st">"cv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>algofinal <span class="ot">&lt;-</span> <span class="fu">gbm</span>(target<span class="sc">~</span>.,<span class="at">data=</span>don_train_gb,<span class="at">distribution =</span> <span class="st">"bernoulli"</span>,</span>
+<span id="cb34-2"><a href="#cb34-2"></a>                 <span class="at">n.trees =</span> <span class="dv">3000</span>,<span class="at">shrinkage =</span> <span class="fl">0.05</span>,<span class="at">cv.folds =</span> <span class="dv">5</span>)</span>
+<span id="cb34-3"><a href="#cb34-3"></a>mobt.logit <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algofinal,<span class="at">method =</span> <span class="st">"cv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="cell">
 
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2254</code></pre>
+</div>
+</div>
 <img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-102-1.png" width="960" class="r-stretch"></section>
+<section id="variables-influentes" class="slide level2">
+<h2>Variables influentes</h2>
+<div class="cell">
+
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                                        var
+classement_diff                                             classement_diff
+classement_j1                                                 classement_j1
+classement_j2                                                 classement_j2
+avg_pct_second_serves_points_won_5_j1 avg_pct_second_serves_points_won_5_j1
+avg_pct_second_serves_points_won_5_j2 avg_pct_second_serves_points_won_5_j2
+avg_pct_first_serves_points_won_5_j1   avg_pct_first_serves_points_won_5_j1
+avg_pct_first_serves_points_won_5_j2   avg_pct_first_serves_points_won_5_j2
+avg_pct_ace_last_5_j2                                 avg_pct_ace_last_5_j2
+avg_pct_ace_last_5_j1                                 avg_pct_ace_last_5_j1
+age_j1                                                               age_j1
+                                        rel.inf
+classement_diff                       61.289006
+classement_j1                          8.755024
+classement_j2                          8.732745
+avg_pct_second_serves_points_won_5_j1  2.302549
+avg_pct_second_serves_points_won_5_j2  2.196802
+avg_pct_first_serves_points_won_5_j1   2.050651
+avg_pct_first_serves_points_won_5_j2   2.003918
+avg_pct_ace_last_5_j2                  1.376416
+avg_pct_ace_last_5_j1                  1.375132
+age_j1                                 1.209758</code></pre>
+</div>
+</div>
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-104-1.png" width="960" class="r-stretch"></section>
 <section id="prévision-sur-le-fichier-test" class="slide level2">
 <h2>Prévision sur le fichier test</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>RES <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Y=</span>don_test<span class="sc">$</span>target)</span>
-<span id="cb30-2"><a href="#cb30-2"></a>RES[,<span class="st">"logitboost"</span>] <span class="ot">&lt;-</span><span class="fu">predict</span>(algofinal,</span>
-<span id="cb30-3"><a href="#cb30-3"></a>                             <span class="at">newdata =</span> don_test_gb,</span>
-<span id="cb30-4"><a href="#cb30-4"></a>                             <span class="at">type =</span> <span class="st">"response"</span>,</span>
-<span id="cb30-5"><a href="#cb30-5"></a>                             <span class="at">n.trees =</span> mobt.logit)</span>
-<span id="cb30-6"><a href="#cb30-6"></a><span class="fu">head</span>(RES)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>RES <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Y=</span>don_test<span class="sc">$</span>target)</span>
+<span id="cb37-2"><a href="#cb37-2"></a>RES[,<span class="st">"logitboost"</span>] <span class="ot">&lt;-</span><span class="fu">predict</span>(algofinal,</span>
+<span id="cb37-3"><a href="#cb37-3"></a>                             <span class="at">newdata =</span> don_test_gb,</span>
+<span id="cb37-4"><a href="#cb37-4"></a>                             <span class="at">type =</span> <span class="st">"response"</span>,</span>
+<span id="cb37-5"><a href="#cb37-5"></a>                             <span class="at">n.trees =</span> mobt.logit)</span>
+<span id="cb37-6"><a href="#cb37-6"></a><span class="fu">head</span>(RES)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  Y logitboost
 1 1  0.6772491
