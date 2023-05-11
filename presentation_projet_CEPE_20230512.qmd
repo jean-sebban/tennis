@@ -1,18 +1,21 @@
 ---
 title: "Projet de Data Science"
-author: "Jean Sebban, Fally Sow et Guillaume Allard"
+author: "Guillaume Allard, Jean Sebban et Fally Sow"
 format: revealjs
 editor: visual
 ---
 
 # Problématique
 
+::: incremental
 1.  Construire un modèle permettant de prédire le résultat d'un match de tennis en simple, à partir d'informations sur les 2 joueurs qui s'affrontent et sur le tournoi.
 
 2.  Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.
+:::
 
 ## Sommaire
 
+::: incremental
 1.  Constitution de la base des matches
 
 2.  Exploration de la base
@@ -22,10 +25,21 @@ editor: visual
 4.  Comparaisons des performances des modèles
 
 5.  Généralisation du modèle
+:::
 
 # 1 - Constitution de la base des matches
 
 ## Importation des fichiers
+
+```{r,eval=FALSE}
+match_stats_2017 <- read.csv2("data/match_stats_2017_unindexed_csv.csv",sep = ",")
+match_stats_1991_2016 <- read.csv2("data/match_stats_1991-2016_unindexed_csv.csv",sep = ",")
+joueurs <- read.csv2("data/player_overviews_unindexed_csv.csv",sep = ",")
+tournois <- read.csv2("data/tournaments_1877-2017_unindexed_csv.csv",sep = ",")
+match_scores_1991_2016 <- read.csv2("data/match_scores_1991-2016_unindexed_csv.csv",sep = ",")
+match_scores_2017 <- read.csv2("data/match_scores_2017_unindexed_csv.csv",sep = ",")
+classements_1973_2017 <- read.csv2("data/rankings_1973-2017_csv.csv",sep = ",")
+```
 
 Les fichiers source ont été récupérés sur le site [datahub](https://datahub.io/sports-data/atp-world-tour-tennis-data) :
 
@@ -71,6 +85,8 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
 ## Preprocessing avant modélisation
 
 ::: incremental
+A partir du fichier avec les 95 610 matches et 23 variables explicatives :
+
 -   Ajout de la variable target (**Y = 1**)
 
 -   Duplication de la base : **n = 191 220 matches**
