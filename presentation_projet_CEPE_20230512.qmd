@@ -85,15 +85,15 @@ Stats calculées sur les 5 précédents matches, pour chaque joueur (winner et l
 ## Preprocessing avant modélisation
 
 ::: incremental
-A partir du fichier avec les 95 610 matches et 23 variables explicatives :
+A partir du fichier avec les **95 610 matches** et **23 variables explicatives** :
 
--   Ajout de la variable target (**Y = 1**)
+-   Ajout de la variable target : **Y = 1**
 
 -   Duplication de la base : **n = 191 220 matches**
 
--   Traitement des valeurs manquantes (**n = 158 870**)
+-   Traitement des valeurs manquantes : **n = 158 870**
 
--   Nettoyage final (mise en factor, traitement anomalies) : **n = 149 852**
+-   Nettoyage final (mise en forme, traitement anomalies) : **n = 149 852**
 :::
 
 # 2 - Exploration de la base
@@ -114,18 +114,24 @@ don <- readRDS("./data/don_sansNA.rds") %>%
 summary(don)
 ```
 
+# Méthode factorielle : ACP
+
 ## ACP : inertie expliquée par les axes
 
 ```{r}
 library(FactoMineR)
 set.seed(1234)
-res.pca <- PCA(sample_n(don, 1000)[,-c(22,23)],
-               quali.sup = 1,
-               quanti.sup = 22,
-               graph = FALSE)
+don_PCA <- dplyr::sample_n(don, 1000)[,-c(22,23)]
+# don_PCA <- don[,-c(22,23)]
+res.pca <- PCA(don_PCA,quali.sup = 1,quanti.sup = 22,graph = FALSE)
 ```
 
-```{r,echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
+res.pca <- PCA(don_PCA,quali.sup = 1,quanti.sup = 22)
+barplot(res.pca$eig[,2])
+```
+
+```{r,echo=FALSE}
 barplot(res.pca$eig[,2],names.arg = paste("",1:nrow(res.pca$eig)))
 ```
 
@@ -140,6 +146,8 @@ plot(res.pca,choix = "var")
 ```{r,echo=TRUE}
 dimdesc(res.pca)
 ```
+
+# Clustering : méthode des K-means
 
 # 3 - Calibrage des paramètres des modèles
 

@@ -9,7 +9,7 @@
 <link href="presentation_projet_CEPE_20230512_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.2.335">
 
-  <meta name="author" content="Jean Sebban, Fally Sow et Guillaume Allard">
+  <meta name="author" content="Guillaume Allard, Jean Sebban et Fally Sow">
   <title>Projet de Data Science</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -406,7 +406,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Jean Sebban, Fally Sow et Guillaume Allard 
+Guillaume Allard, Jean Sebban et Fally Sow 
 </div>
 </div>
 </div>
@@ -415,20 +415,24 @@ Jean Sebban, Fally Sow et Guillaume Allard
 <section>
 <section id="problématique" class="title-slide slide level1 center">
 <h1>Problématique</h1>
+<div>
 <ol type="1">
-<li><p>Construire un modèle permettant de prédire le résultat d’un match de tennis en simple, à partir d’informations sur les 2 joueurs qui s’affrontent et sur le tournoi.</p></li>
-<li><p>Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.</p></li>
+<li class="fragment"><p>Construire un modèle permettant de prédire le résultat d’un match de tennis en simple, à partir d’informations sur les 2 joueurs qui s’affrontent et sur le tournoi.</p></li>
+<li class="fragment"><p>Classification supervisée : prédire Y (0 ou 1), à partir de variables explicatives quantitatives et qualitatives.</p></li>
 </ol>
+</div>
 </section>
 <section id="sommaire" class="slide level2">
 <h2>Sommaire</h2>
+<div>
 <ol type="1">
-<li><p>Constitution de la base des matches</p></li>
-<li><p>Exploration de la base</p></li>
-<li><p>Calibrage des paramètres des modèles</p></li>
-<li><p>Comparaisons des performances des modèles</p></li>
-<li><p>Généralisation du modèle</p></li>
+<li class="fragment"><p>Constitution de la base des matches</p></li>
+<li class="fragment"><p>Exploration de la base</p></li>
+<li class="fragment"><p>Calibrage des paramètres des modèles</p></li>
+<li class="fragment"><p>Comparaisons des performances des modèles</p></li>
+<li class="fragment"><p>Généralisation du modèle</p></li>
 </ol>
+</div>
 </section></section>
 <section>
 <section id="constitution-de-la-base-des-matches" class="title-slide slide level1 center">
@@ -437,6 +441,9 @@ Jean Sebban, Fally Sow et Guillaume Allard
 </section>
 <section id="importation-des-fichiers" class="slide level2">
 <h2>Importation des fichiers</h2>
+<div class="cell">
+
+</div>
 <p>Les fichiers source ont été récupérés sur le site <a href="https://datahub.io/sports-data/atp-world-tour-tennis-data">datahub</a> :</p>
 <ul>
 <li><strong>Matches :</strong> stats et scores de 1991 à 2017 (n = 95 610)</li>
@@ -477,11 +484,12 @@ Jean Sebban, Fally Sow et Guillaume Allard
 <section id="preprocessing-avant-modélisation" class="slide level2">
 <h2>Preprocessing avant modélisation</h2>
 <div>
+<p>A partir du fichier avec les <strong>95 610 matches</strong> et <strong>23 variables explicatives</strong> :</p>
 <ul>
-<li class="fragment"><p>Ajout de la variable target (<strong>Y = 1</strong>)</p></li>
+<li class="fragment"><p>Ajout de la variable target : <strong>Y = 1</strong></p></li>
 <li class="fragment"><p>Duplication de la base : <strong>n = 191 220 matches</strong></p></li>
-<li class="fragment"><p>Traitement des valeurs manquantes (<strong>n = 158 870</strong>)</p></li>
-<li class="fragment"><p>Nettoyage final (mise en factor, traitement anomalies) : <strong>n = 149 852</strong></p></li>
+<li class="fragment"><p>Traitement des valeurs manquantes : <strong>n = 158 870</strong></p></li>
+<li class="fragment"><p>Nettoyage final (mise en forme, traitement anomalies) : <strong>n = 149 852</strong></p></li>
 </ul>
 </div>
 </section></section>
@@ -558,6 +566,11 @@ Jean Sebban, Fally Sow et Guillaume Allard
                                     Max.   : 1753  </code></pre>
 </div>
 </div>
+</section></section>
+<section>
+<section id="méthode-factorielle-acp" class="title-slide slide level1 center">
+<h1>Méthode factorielle : ACP</h1>
+
 </section>
 <section id="acp-inertie-expliquée-par-les-axes" class="slide level2">
 <h2>ACP : inertie expliquée par les axes</h2>
@@ -565,17 +578,18 @@ Jean Sebban, Fally Sow et Guillaume Allard
 
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">barplot</span>(res.pca<span class="sc">$</span>eig[,<span class="dv">2</span>],<span class="at">names.arg =</span> <span class="fu">paste</span>(<span class="st">""</span>,<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(res.pca<span class="sc">$</span>eig)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>res.pca <span class="ot">&lt;-</span> <span class="fu">PCA</span>(don_PCA,<span class="at">quali.sup =</span> <span class="dv">1</span>,<span class="at">quanti.sup =</span> <span class="dv">22</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">barplot</span>(res.pca<span class="sc">$</span>eig[,<span class="dv">2</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-10-1.png" width="960" class="r-stretch"></section>
+
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-14-1.png" width="960" class="r-stretch"></section>
 <section id="acp-graphe-des-variables" class="slide level2">
 <h2>ACP : graphe des variables</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">plot</span>(res.pca,<span class="at">choix =</span> <span class="st">"var"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 </div>
-<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-12-1.png" width="960" class="r-stretch"></section>
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-16-1.png" width="960" class="r-stretch"></section>
 <section id="acp-description-des-axes" class="slide level2">
 <h2>ACP : description des axes</h2>
 <div class="cell">
@@ -8713,6 +8727,11 @@ $call$X
 </div>
 </div>
 </section></section>
+<section id="clustering-méthode-des-k-means" class="title-slide slide level1 center">
+<h1>Clustering : méthode des K-means</h1>
+
+</section>
+
 <section>
 <section id="calibrage-des-paramètres-des-modèles" class="title-slide slide level1 center">
 <h1>3 - Calibrage des paramètres des modèles</h1>
@@ -9135,7 +9154,7 @@ n= 117714
 <span id="cb19-3"><a href="#cb19-3"></a> mobt.ada</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-68-1.png" width="960" class="r-stretch"></section>
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-72-1.png" width="960" class="r-stretch"></section>
 <section id="algo-10-logit-boost" class="slide level2">
 <h2>Algo 10 : logit-boost</h2>
 <div class="cell">
@@ -9144,7 +9163,7 @@ n= 117714
 <span id="cb20-3"><a href="#cb20-3"></a>mobt.logit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-72-1.png" width="960" class="r-stretch"></section></section>
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-76-1.png" width="960" class="r-stretch"></section></section>
 <section>
 <section id="comparaisons-des-performances-des-modèles" class="title-slide slide level1 center">
 <h1>4 - Comparaisons des performances des modèles</h1>
@@ -9341,7 +9360,7 @@ n= 117714
 <span id="cb24-3"><a href="#cb24-3"></a>mobt.logit <span class="ot">&lt;-</span> <span class="fu">gbm.perf</span>(algofinal,<span class="at">method =</span> <span class="st">"cv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
-<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-90-1.png" width="960" class="r-stretch"></section>
+<img data-src="presentation_projet_CEPE_20230512_files/figure-revealjs/unnamed-chunk-94-1.png" width="960" class="r-stretch"></section>
 <section id="prévision-sur-le-fichier-test" class="slide level2">
 <h2>Prévision sur le fichier test</h2>
 <div class="cell">
