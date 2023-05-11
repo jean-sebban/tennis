@@ -178,10 +178,12 @@ rm(toto,toto2,toto3,toto4)
 ## 2- 5 Ajout d'informations à partir des stats des matches précédents
 
 -   1 - nombre de matches gagnés sur les x matches précédents
--   2 - pourcentage d'aces sur les x matches précédents 
+-   2 - pourcentage d'aces sur les x matches précédents
 -   3 - pourcentage de double fautes sur les x matches précédents
--   4 - pourcentage de points gagnés au premier service sur les x matches précédents
--   5 - pourcentage de points gagnés au deuxième service sur les x matches précédents
+-   4 - pourcentage de points gagnés au premier service sur les x
+    matches précédents
+-   5 - pourcentage de points gagnés au deuxième service sur les x
+    matches précédents
 
 ```{r}
 don_winner <- don %>%
@@ -265,7 +267,9 @@ rm(don_loser,don_pivotted,don_winner,don_with_stats,don_with_stats2,loser_stats,
 -   Informations sur la surface du terrain (4 possibilités : herbe,
     terre battue, dur et moquette)
 
-Dans les tournois récents, il n'y a plus de tournois sur moquette, donc il faut enlever ces matches des modèles parce qu'ils ne pourront pas être utilisés dans les matches récents.
+Dans les tournois récents, il n'y a plus de tournois sur moquette, donc
+il faut enlever ces matches des modèles parce qu'ils ne pourront pas
+être utilisés dans les matches récents.
 
 ```{r}
 tmp <- don %>% 
@@ -366,7 +370,8 @@ saveRDS(don_sansNA,"data/don_sansNA.rds")
 
 # II - Exploration de la base
 
-Le but de l'exploration de la base est de comprendre sa structure, notamment les liens entre les différentes variables.
+Le but de l'exploration de la base est de comprendre sa structure,
+notamment les liens entre les différentes variables.
 
 ```{r}
 library(skimr)
@@ -383,7 +388,7 @@ data <- readRDS("./data/don_sansNA.rds") %>%
   filter(tourney_surface != "Carpet") #on enlève les matches sur moquette
 ```
 
-## 1 - ACP 
+## 1 - ACP
 
 ```{r}
 
@@ -412,7 +417,6 @@ dimdesc(res.pca,proba=0.2)
 
 ```
 
-
 ## 2 - Influence des variables avec l'arbre de regression
 
 ```{r}
@@ -431,7 +435,6 @@ summary(model)
 visNetwork::visTree(model, fallenLeaves = TRUE, height = "1000px")
 
 ```
-
 
 # III - Comparaison des classifications
 
@@ -486,8 +489,10 @@ YY <- don_train$target
 
 Test avec une validation croisée à 10 blocs sur les données
 d'entraînement. Les résultats des différents algorithmes seront stockés
-dans le dataframe RES.
-Le problème de cette méthode telle qu'elle est développée ci-après est qu'elle ne considère pas les données comme inscrites dans le temps. Les matches du passé seront utilisés pour prédire les matches à venir.
+dans le dataframe RES. Le problème de cette méthode telle qu'elle est
+développée ci-après est qu'elle ne considère pas les données comme
+inscrites dans le temps. Les matches du passé seront utilisés pour
+prédire les matches à venir.
 
 ```{r}
 don <- don_train
@@ -568,7 +573,8 @@ saveRDS(RES,"data/RES_training.RDS")
 
 ## 3 - Validation hold out
 
-Le fichier d'entraînement créé plus haut est divisé en un fichier d'apprentissage et un fichier de validation.
+Le fichier d'entraînement créé plus haut est divisé en un fichier
+d'apprentissage et un fichier de validation.
 
 ```{r}
 #fichier de validation sur les matches de 2013 et 2014
@@ -602,7 +608,6 @@ don_train_valid_gb <- don_train_valid %>% mutate(target = as.numeric(target),
                                                target == 2 ~ 1)) 
 
 ```
-
 
 ```{r}
 
@@ -659,8 +664,6 @@ saveRDS(algo9,"data/algos/algo9.RDS")
 saveRDS(algo10,"data/algos/algo10.RDS")
 saveRDS(RES,"data/RES_app_valid.RDS")
 ```
-
-
 
 # III - Mesure de la performance
 
@@ -737,7 +740,11 @@ saveRDS(perf,"data/perf_app_valid.rds")
 
 # 4 - Généralisation du modèle retenu
 
-L'algorithme retenu est donc le logit boost. On le recalcule sur tout le fichier d'entraînement (en intégrant les matches des annéees 2013 à 2014). Et on le généralise sur le fichier qui n'a pas du tout été utilisé pour construire  le modèle : le fichier test (avec les matches des années 2015, 2016 et 2017).
+L'algorithme retenu est donc le logit boost. On le recalcule sur tout le
+fichier d'entraînement (en intégrant les matches des annéees 2013 à
+2014). Et on le généralise sur le fichier qui n'a pas du tout été
+utilisé pour construire le modèle : le fichier test (avec les matches
+des années 2015, 2016 et 2017).
 
 ```{r}
 
@@ -798,4 +805,3 @@ for(ii in 2:ncol(RES2)){
 precis <- function(X,Y){sum(X==Y)/length(X)*100}
 sort(apply(RES2,2,precis,Y=RES2$Y))
 ```
-
