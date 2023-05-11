@@ -149,6 +149,64 @@ dimdesc(res.pca)
 
 # Clustering : méthode des K-means
 
+## Premier clustering
+
+```{r, eval=FALSE,echo=TRUE}
+res.kmeans1 <- kmeans(don_kmeans_1,centers=4,nstart=50)
+```
+
+```{r}
+don_kmeans <- don[,2:23]
+# Selection des variables pour la Kmeans 
+don_kmeans_1 <- don_kmeans[,c(4,5,6,7,8,9,10)]
+dctrl_1 = don_kmeans[,c(4,5, 6, 7, 8, 9, 10)]
+
+# Standardisation des données 
+don_kmeans_1 <- scale(don_kmeans_1)
+
+
+# On retient 4 groupes 
+res.kmeans1 <- readRDS("data/clustering/res.kmeans1.RDS")
+
+#boxplot(don$target~tmp$cluster)
+
+Caract_group <- 
+  dctrl_1 %>% 
+  group_by(res.kmeans1$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group)
+```
+
+## Deuxième clustering
+
+```{r, eval=FALSE,echo=TRUE}
+res.kmeans2 <- kmeans(don_kmeans_2,centers=4,nstart=50)
+```
+
+```{r}
+# Selection des variables pour la Kmeans 
+don_kmeans_2 <- don_kmeans[,c(1, 2, 3, 4, 8, 9, 10)]
+dctrl_2 = don_kmeans[,c(1, 2, 3, 4, 8, 9, 10)]
+
+# Standardisation des données 
+don_kmeans_2 <- scale(don_kmeans_2)
+
+
+# On retient 4 groupes 
+res.kmeans2 <- readRDS("data/clustering/res.kmeans2.RDS")
+
+
+#boxplot(don$target~tmp$cluster)
+
+Caract_group <- 
+  dctrl_2 %>% 
+  group_by(res.kmeans2$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group)
+```
+
 # 3 - Calibrage des paramètres des modèles
 
 ```{r}

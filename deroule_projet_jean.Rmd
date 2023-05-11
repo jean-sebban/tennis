@@ -417,23 +417,63 @@ dimdesc(res.pca,proba=0.2)
 
 ```
 
-## 2 - Influence des variables avec l'arbre de regression
+## 2 - KMeans
+
+## Première classif
 
 ```{r}
-data <- readRDS("./data/don_sansNA.rds") %>% 
-  select(-starts_with("match"))
+don_kmeans <- don[,2:23]
+# Selection des variables pour la Kmeans 
+don_kmeans_1 <- don_kmeans[,c(4,5,6,7,8,9,10)]
+dctrl_1 = don_kmeans[,c(4,5, 6, 7, 8, 9, 10)]
 
-skim(data)
+# Standardisation des données 
+don_kmeans_1 <- scale(don_kmeans_1)
 
-model <- rpart(target ~ ., 
-               data = dplyr::sample_n(data, 10000), 
-               cp = 0.0016,
-               maxcompete = 3, #montre les variables proches de celle choisie
-               maxsurrogate=1)#permet de traiter les valeurs manquantes
-summary(model)
+set.seed(100)
+nb=20
+rapport <- 1:nb
+for (ii in 1:nb) {
+  tmp <- kmeans(don_kmeans_1, centers=ii)
+  rapport[ii] <- tmp$betweens/tmp$totss
+}
+plot(rapport, type="b")
 
-visNetwork::visTree(model, fallenLeaves = TRUE, height = "1000px")
+# On retient 4 groupes 
+res.kmeans1 <- kmeans(don_kmeans_1,centers=4,nstart=50)
+saveRDS(res.kmeans1,"data/clustering/res.kmeans1.RDS")
+table(tmp_1$cluster)
+#boxplot(don$target~tmp$cluster)
 
+
+Caract_group <- 
+  dctrl_1 %>% 
+  group_by(res.kmeans1$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group)
+
+```
+
+## Deuxième classif
+
+```{r}
+# Selection des variables pour la Kmeans 
+don_kmeans_2 <- don_kmeans[,c(1, 2, 3, 4, 8, 9, 10)]
+dctrl_2 = don_kmeans[,c(1, 2, 3, 4, 8, 9, 10)]
+
+# Standardisation des données 
+don_kmeans_2 <- scale(don_kmeans_2)
+
+res.kmeans2 <- kmeans(don_kmeans_2,centers=4,nstart=50)
+saveRDS(res.kmeans2,"data/clustering/res.kmeans2.RDS")
+
+Caract_group <- 
+  dctrl_2 %>% 
+  group_by(res.kmeans2$cluster) %>% 
+  summarise_all(mean)
+
+t(Caract_group)
 ```
 
 # III - Comparaison des classifications
